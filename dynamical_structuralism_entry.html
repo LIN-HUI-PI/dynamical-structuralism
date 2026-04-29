@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamical Structuralism · 動力結構主義</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Noto+Serif+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1814;
+    --ink-mid: #3d3a35;
+    --ink-light: #7a7570;
+    --paper: #f5f2ec;
+    --paper-warm: #ede9e0;
+    --line: #c8c2b8;
+    --accent: #2a2520;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'EB Garamond', 'Noto Serif TC', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 640px;
+    position: relative;
+  }
+
+  /* Top rule */
+  .top-rule {
+    width: 100%;
+    height: 1px;
+    background: var(--ink);
+    margin-bottom: 2.8rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.1s;
+  }
+
+  /* Title block */
+  .title-block {
+    margin-bottom: 2.8rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards 0.3s;
+  }
+
+  .title-en {
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    color: var(--ink);
+  }
+
+  .title-zh {
+    font-size: 1.4rem;
+    font-weight: 300;
+    font-family: 'Noto Serif TC', serif;
+    color: var(--ink-mid);
+    margin-top: 0.3rem;
+    letter-spacing: 0.08em;
+  }
+
+  .tagline {
+    margin-top: 1.2rem;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--ink-mid);
+    line-height: 1.7;
+    max-width: 520px;
+  }
+
+  .tagline-zh {
+    display: block;
+    font-style: normal;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    margin-top: 0.4rem;
+    line-height: 1.8;
+  }
+
+  /* Divider */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--line);
+    margin: 2.4rem 0;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+  }
+
+  /* Sections */
+  .section {
+    margin-bottom: 2.2rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 1rem;
+    font-style: normal;
+  }
+
+  .claim {
+    margin-bottom: 1rem;
+    display: grid;
+    grid-template-columns: 1.4rem 1fr;
+    gap: 0 0.8rem;
+    align-items: start;
+  }
+
+  .claim-num {
+    font-size: 0.78rem;
+    color: var(--ink-light);
+    padding-top: 0.18rem;
+    font-style: italic;
+  }
+
+  .claim-text {
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--ink-mid);
+  }
+
+  .claim-zh {
+    display: block;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    margin-top: 0.15rem;
+    line-height: 1.8;
+  }
+
+  /* Principle block */
+  .principle {
+    border-left: 1.5px solid var(--line);
+    padding-left: 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .principle-name {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-light);
+    margin-bottom: 0.3rem;
+  }
+
+  .principle-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--ink-mid);
+  }
+
+  .principle-zh {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.88rem;
+    color: var(--ink-light);
+    display: block;
+    margin-top: 0.2rem;
+    line-height: 1.8;
+  }
+
+  /* Documents */
+  .doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .doc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .doc-type {
+    font-size: 0.75rem;
+    color: var(--ink-light);
+    letter-spacing: 0.1em;
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .doc-doi {
+    font-size: 0.88rem;
+    color: var(--ink-mid);
+    font-style: italic;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .doc-doi:hover {
+    border-color: var(--ink-mid);
+  }
+
+  /* Bottom rule */
+  .bottom-block {
+    margin-top: 2.8rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards;
+  }
+
+  .author {
+    font-size: 0.85rem;
+    color: var(--ink-mid);
+    font-style: italic;
+  }
+
+  .date {
+    font-size: 0.8rem;
+    color: var(--ink-light);
+    letter-spacing: 0.06em;
+  }
+
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .top-rule       { animation-delay: 0.05s; }
+  .title-block    { animation-delay: 0.2s; }
+  .divider:nth-of-type(1) { animation-delay: 0.4s; }
+  .section:nth-of-type(1) { animation-delay: 0.5s; }
+  .divider:nth-of-type(2) { animation-delay: 0.65s; }
+  .section:nth-of-type(2) { animation-delay: 0.75s; }
+  .divider:nth-of-type(3) { animation-delay: 0.9s; }
+  .section:nth-of-type(3) { animation-delay: 1.0s; }
+  .bottom-block           { animation-delay: 1.15s; }
+
+  @media (max-width: 480px) {
+    .title-en { font-size: 1.5rem; }
+    .title-zh { font-size: 1.1rem; }
+    .doc-item { flex-direction: column; gap: 0.2rem; }
+    .doc-type { min-width: unset; }
+    .bottom-block { flex-direction: column; gap: 0.4rem; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top-rule"></div>
+
+  <div class="title-block">
+    <div class="title-en">Dynamical Structuralism</div>
+    <div class="title-zh">動力結構主義</div>
+    <p class="tagline">
+      When a system fails, we intervene after the fact.
+      This framework asks a different question: where, precisely,
+      is the geometric position that precedes irreversibility?
+      <span class="tagline-zh">
+        當一個系統失控，我們通常在失控之後才介入。<br>
+        這個框架問的是另一個問題：在失控成為不可逆之前，那個幾何位置在哪裡？
+      </span>
+    </p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-label">Three Claims · 三個主張</div>
+
+    <div class="claim">
+      <span class="claim-num">i.</span>
+      <div class="claim-text">
+        Structure is not given. It is generated by tension dynamics.
+        <span class="claim-zh">結構不是給定的，它是張力場生成的。</span>
+      </div>
+    </div>
+
+    <div class="claim">
+      <span class="claim-num">ii.</span>
+      <div class="claim-text">
+        The membrane is not a boundary. It is the shape produced
+        when two tension fields make contact — it moves, it is never still.
+        <span class="claim-zh">膜不是邊界，它是兩個張力場接觸時產生的形狀——它在動，它不是靜止的線。</span>
+      </div>
+    </div>
+
+    <div class="claim">
+      <span class="claim-num">iii.</span>
+      <div class="claim-text">
+        Intervention is not correcting deviation. It is rewriting rules
+        at the geometric layer — while the system can still be rewritten.
+        <span class="claim-zh">介入不是修正偏差，而是在幾何層重寫規則——在系統還可以被重寫的時候。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-label">Three Normative Principles · 三條規範原則</div>
+
+    <div class="principle">
+      <div class="principle-name">Principle of Intervention Point</div>
+      <div class="principle-text">
+        The intervention point must be before irreversibility.
+        <span class="principle-zh">介入點必須在不可逆之前。</span>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-name">Principle of Restoration</div>
+      <div class="principle-text">
+        Intervention may only restore the system's own geometry —
+        not substitute an external standard for it.
+        <span class="principle-zh">介入只能恢復系統自己的幾何，不能用外部標準替換它。</span>
+      </div>
+    </div>
+
+    <div class="principle">
+      <div class="principle-name">Principle of Subject Confirmation</div>
+      <div class="principle-text">
+        In any contact between person and system,
+        the decision subject must be confirmable.
+        <span class="principle-zh">在人與系統的接觸中，決策主體必須可以被確認。</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section">
+    <div class="section-label">Documents · 文件</div>
+    <div class="doc-list">
+      <div class="doc-item">
+        <span class="doc-type">Founding Document</span>
+        <a class="doc-doi" href="https://doi.org/10.5281/zenodo.19606082" target="_blank">
+          DOI: 10.5281/zenodo.19606082
+        </a>
+      </div>
+      <div class="doc-item">
+        <span class="doc-type">Normative Derivation</span>
+        <a class="doc-doi" href="https://doi.org/10.5281/zenodo.19872326" target="_blank">
+          DOI: 10.5281/zenodo.19872326
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-block">
+    <span class="author">Lin, Hui-Pi · 林慧碧 · Taiwan</span>
+    <span class="date">April 2026</span>
+  </div>
+
+</div>
+</body>
+</html>
