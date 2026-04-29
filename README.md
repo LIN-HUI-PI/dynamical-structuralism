@@ -19,9 +19,8 @@ DOI: [10.5281/zenodo.19872326](https://doi.org/10.5281/zenodo.19872326)
 
 ## Visual · 視覺
 
-- [Entry Page · 入口頁面](https://lin-hui-pi.github.io/dynamical-structuralism/)
-- [S-Line Animation · S線動畫](https://lin-hui-pi.github.io/dynamical-structuralism/sline_animation.html)
-
+- [Entry Page · 入口頁面](dynamical_structuralism_entry)
+- [S-Line Animation · S線動畫](sline_animation.html)
 
 ---
 
