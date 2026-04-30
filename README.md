@@ -10,6 +10,7 @@ Normative Derivation · 規範推導DOI: 10.5281/zenodo.19872326
 
 Visual · 視覺
 	•	Entry Page · 入口頁面
+	
 	•	S-Line Animation · S線動畫
 
 Lin, Hui-Pi · 林慧碧 · Taiwan · 2026
