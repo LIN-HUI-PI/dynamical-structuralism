@@ -1,5 +1,3 @@
-英文是女兒的
-我的README是這樣
 Dynamical Structuralism · 動力結構主義
 A theoretical framework proposing that structure, consciousness,
 and intervention share a common generative origin in tension dynamics.
