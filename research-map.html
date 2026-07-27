@@ -1,774 +1,540 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hui-Pi Lin · Research Map</title>
+<title>LIN Research Programme — Master Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,600;1,400&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap');
-
   :root {
-    --bg: #0c0c0e;
-    --surface: #131316;
-    --border: #1e1e24;
-    --border-dim: #17171c;
-    --text: #e8e4dd;
-    --text-dim: #6b6760;
-    --text-mid: #a09b94;
-    --accent-ds: #c8a97e;
-    --accent-fail: #7e9ec8;
-    --accent-warn: #7ec8a3;
-    --accent-human: #c87e9e;
-    --accent-gov: #9e7ec8;
-    --accent-bio: #c8b07e;
-    --accent-neuro: #7ec8c8;
-    --accent-node: #888480;
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-2: #20242c;
+    --text: #ece8db;
+    --text-dim: #8b92a0;
+    --text-faint: #5b6068;
+    --accent: #4fa3a0;
+    --accent-soft: #2f4a49;
+    --rule: #2a2f38;
+    --serif: "Noto Serif TC", "Newsreader", "Georgia", serif;
+    --sans: "Noto Sans TC", "Inter", -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  * { box-sizing: border-box; }
 
   body {
+    margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    line-height: 1.6;
-    min-height: 100vh;
-    padding: 0 0 80px 0;
-  }
-
-  .header {
-    padding: 48px 40px 32px;
-    border-bottom: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-  .header::before {
-    content: '';
-    position: absolute;
-    top: -60px; right: -60px;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(200,169,126,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .header-label {
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-  }
-  .header-title {
-    font-family: 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 300;
-    color: var(--accent-ds);
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-  }
-  .header-sub {
-    font-size: 11px;
-    color: var(--text-dim);
-    max-width: 580px;
+    font-family: var(--sans);
     line-height: 1.7;
-  }
-  .header-sub em {
-    color: var(--text-mid);
-    font-style: italic;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .tree {
-    padding: 32px 40px;
-    max-width: 960px;
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 24px 120px;
   }
 
-  .root-node {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 4px;
+  header.hero {
+    margin-bottom: 56px;
   }
-  .root-icon { font-size: 11px; color: var(--accent-ds); }
-  .root-label {
-    font-family: 'Fraunces', serif;
-    font-size: 15px;
-    font-weight: 400;
-    color: var(--accent-ds);
-    letter-spacing: 0.04em;
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
   }
-  .root-desc {
-    font-size: 10px;
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 40px);
+    line-height: 1.25;
+    margin: 0 0 16px;
+    color: var(--text);
+  }
+
+  .lede {
     color: var(--text-dim);
-    margin-left: 4px;
-    font-style: italic;
+    font-size: 16px;
+    max-width: 58ch;
   }
 
-  .branch {
-    margin-left: 20px;
-    border-left: 1px solid var(--border-dim);
-    padding-left: 0;
-    margin-top: 0;
-  }
-  .branch-group { margin-top: 20px; }
-
-  .section-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    position: relative;
-    margin-bottom: 0;
-  }
-  .connector {
-    color: var(--border);
-    white-space: pre;
-    font-size: 13px;
-    line-height: 22px;
-    flex-shrink: 0;
-  }
-  .section-block {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding: 5px 12px 5px 10px;
+  /* --- Hierarchy diagram --- */
+  .hierarchy {
+    margin: 48px 0 64px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
     border-radius: 4px;
-    cursor: default;
-    transition: background 0.15s;
-    flex: 1;
+    padding: 32px 28px;
   }
-  .section-block:hover { background: rgba(255,255,255,0.03); }
 
-  .section-num {
-    font-size: 9px;
-    color: var(--text-dim);
+  .hierarchy-title {
+    font-family: var(--mono);
+    font-size: 11px;
     letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 24px;
+  }
+
+  .h-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .h-row:last-of-type { border-bottom: none; }
+
+  .h-indent-0 { margin-left: 0; }
+  .h-indent-1 { margin-left: 28px; }
+  .h-indent-2 { margin-left: 56px; }
+
+  .h-label {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--text);
+  }
+  .h-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .h-glyph {
+    color: var(--accent);
+    font-family: var(--mono);
     width: 20px;
     flex-shrink: 0;
   }
-  .section-name {
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .section-zh {
-    font-size: 10px;
-    color: var(--text-dim);
-    font-weight: 400;
-  }
 
-  .item-sub {
-    margin-left: 20px;
-    border-left: 1px solid var(--border-dim);
-  }
-  .item-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-  }
-  .item-block {
+  .h-cross {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--accent-soft);
     display: flex;
     align-items: baseline;
-    gap: 8px;
-    padding: 3px 12px 3px 10px;
-    border-radius: 4px;
-    cursor: default;
-    transition: background 0.15s;
-    flex: 1;
+    gap: 10px;
     flex-wrap: wrap;
   }
-  .item-block:hover { background: rgba(255,255,255,0.025); }
+  .h-cross .h-label { color: var(--accent); }
+  .h-cross .h-sub { font-style: italic; }
 
-  .item-name {
-    font-size: 12px;
+  /* --- Category sections --- */
+  section.cat {
+    margin-bottom: 48px;
+    scroll-margin-top: 20px;
+  }
+
+  .cat-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+
+  .cat-num {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent);
+  }
+
+  .cat-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 20px;
+  }
+
+  .cat-title .zh {
+    font-size: 15px;
+    color: var(--text-dim);
     font-weight: 400;
-    letter-spacing: 0.02em;
-  }
-  .item-zh {
-    font-size: 10px;
-    color: var(--text-dim);
-  }
-  .item-tag {
-    font-size: 9px;
-    padding: 1px 6px;
-    border-radius: 2px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.7;
-    white-space: nowrap;
-  }
-  .item-q {
-    font-size: 10px;
-    color: var(--text-dim);
-    font-style: italic;
-    margin-left: 2px;
-    flex-basis: 100%;
-    padding-left: 0;
+    margin-left: 6px;
   }
 
-  .detail-sub {
-    margin-left: 40px;
-    border-left: 1px dashed var(--border-dim);
-  }
-  .detail-row {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-  .detail-block {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 1px 12px 1px 10px;
-    flex: 1;
-  }
-  .detail-dot {
-    width: 3px; height: 3px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    opacity: 0.5;
-  }
-  .detail-text {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.02em;
+  ul.entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
-  .nodes-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 12px 6px 10px;
-    margin-left: 39px;
-    margin-top: 2px;
+  li.entry {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--rule);
   }
-  .node-chip {
-    font-size: 9px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
+  li.entry:last-child { border-bottom: none; }
+
+  .entry-title {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 4px;
   }
 
-  .summary {
-    margin: 40px 40px 0;
-    padding: 20px 24px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    border-left: 3px solid var(--accent-ds);
-    background: rgba(200,169,126,0.03);
-    max-width: 860px;
+  .entry-doi {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
   }
-  .summary-label {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--accent-ds);
-    opacity: 0.7;
-    margin-bottom: 8px;
-  }
-  .summary-text {
-    font-family: 'Fraunces', serif;
+  .entry-doi:hover { text-decoration: underline; }
+
+  .entry-note {
+    margin-top: 6px;
     font-size: 13px;
-    font-weight: 300;
-    font-style: italic;
-    color: var(--text-mid);
-    line-height: 1.8;
-  }
-
-  /* version stamp */
-  .version-stamp {
-    margin: 16px 40px 0;
-    font-size: 9px;
     color: var(--text-dim);
-    letter-spacing: 0.12em;
-    opacity: 0.5;
+    border-left: 2px solid var(--rule);
+    padding-left: 10px;
   }
 
-  .c-ds    { color: var(--accent-ds); }
-  .c-fail  { color: var(--accent-fail); }
-  .c-warn  { color: var(--accent-warn); }
-  .c-human { color: var(--accent-human); }
-  .c-gov   { color: var(--accent-gov); }
-  .c-bio   { color: var(--accent-bio); }
-  .c-neuro { color: var(--accent-neuro); }
-  .c-node  { color: var(--accent-node); }
+  /* --- Superseded section --- */
+  section.superseded {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 2px solid var(--rule);
+  }
+  section.superseded .cat-title,
+  section.superseded .cat-num { color: var(--text-faint); }
+  section.superseded .entry-title {
+    color: var(--text-faint);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-faint);
+  }
+  section.superseded .entry-doi { color: var(--text-faint); }
+  section.superseded .entry-note { color: var(--text-faint); }
 
-  .bg-ds    { background: rgba(200,169,126,0.1); color: var(--accent-ds); }
-  .bg-fail  { background: rgba(126,158,200,0.1); color: var(--accent-fail); }
-  .bg-warn  { background: rgba(126,200,163,0.1); color: var(--accent-warn); }
-  .bg-human { background: rgba(200,126,158,0.1); color: var(--accent-human); }
-  .bg-gov   { background: rgba(158,126,200,0.1); color: var(--accent-gov); }
-  .bg-bio   { background: rgba(200,176,126,0.1); color: var(--accent-bio); }
-  .bg-neuro { background: rgba(126,200,200,0.1); color: var(--accent-neuro); }
+  /* --- Reading guide --- */
+  section.guide {
+    margin-top: 72px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 28px;
+  }
+
+  .guide h2 {
+    font-family: var(--serif);
+    font-size: 18px;
+    margin: 0 0 18px;
+  }
+
+  .path {
+    margin-bottom: 18px;
+  }
+  .path-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .path-chain {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+  .path-chain .step { color: var(--text); }
+  .path-chain .arrow { color: var(--text-faint); margin: 0 6px; }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+  }
+
+  @media (max-width: 520px) {
+    .h-indent-1 { margin-left: 16px; }
+    .h-indent-2 { margin-left: 32px; }
+    .hierarchy { padding: 24px 18px; }
+  }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<div class="header">
-  <div class="header-label">Research Architecture · Lin Hui-Pi / NOIRÉA</div>
-  <div class="header-title">Dynamical Structuralism</div>
-  <div class="header-sub">
-    <em>真正重要的變化，往往先發生在不可見層。</em><br>
-    A research program exploring how invisible structural changes emerge before failure,<br>
-    how intervention windows can be preserved, and how human agency can remain sovereign.
+  <header class="hero">
+    <div class="eyebrow">Master Catalog · v1.0</div>
+    <h1>LIN Research Programme</h1>
+    <p class="lede">從理論根基到治理法律化的完整研究目錄。以下依生成順序分為八類，另附閱讀路徑導覽。</p>
+  </header>
+
+  <div class="hierarchy">
+    <div class="hierarchy-title">核心位階關係</div>
+    <div class="h-row h-indent-0">
+      <span class="h-glyph">┌</span>
+      <div>
+        <div class="h-label">Dynamical Structuralism</div>
+        <div class="h-sub">世界觀 — 為什麼</div>
+      </div>
+    </div>
+    <div class="h-row h-indent-1">
+      <span class="h-glyph">└</span>
+      <div>
+        <div class="h-label">LIN System</div>
+        <div class="h-sub">架構 — 怎麼做</div>
+      </div>
+    </div>
+    <div class="h-row h-indent-2">
+      <span class="h-glyph">└</span>
+      <div>
+        <div class="h-label">IMLAIS</div>
+        <div class="h-sub">法律化 — 規則是什麼（IMLAIS metadata 標註 LIN System 為其 Reference implementation）</div>
+      </div>
+    </div>
+    <div class="h-cross">
+      <span class="h-label">Constellarium</span>
+      <span class="h-sub">— 橫跨以上三層的概念詞典，查詞用，不按順序讀</span>
+    </div>
   </div>
+
+  <!-- I. Foundations -->
+  <section class="cat" id="foundations">
+    <div class="cat-head">
+      <span class="cat-num">I</span>
+      <span class="cat-title">Foundations<span class="zh">理論基礎</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Dynamical Structuralism — DS Founding Document v1.1</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.19607127" target="_blank" rel="noopener">10.5281/zenodo.19607127</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Normative Derivation from Dynamical Structuralism</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.19872326" target="_blank" rel="noopener">10.5281/zenodo.19872326</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Consciousness as Tension Attractor</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20404969" target="_blank" rel="noopener">10.5281/zenodo.20404969</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">The Convergence Document</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20405248" target="_blank" rel="noopener">10.5281/zenodo.20405248</a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- II. Structural Phenomena -->
+  <section class="cat" id="phenomena">
+    <div class="cat-head">
+      <span class="cat-num">II</span>
+      <span class="cat-title">Structural Phenomena<span class="zh">結構現象</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Lake Model v1.2</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20394394" target="_blank" rel="noopener">10.5281/zenodo.20394394</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Transient Overlap Membrane (TOM)</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20399636" target="_blank" rel="noopener">10.5281/zenodo.20399636</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Bionic Tear</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20384486" target="_blank" rel="noopener">10.5281/zenodo.20384486</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Sentinel Architecture</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20388312" target="_blank" rel="noopener">10.5281/zenodo.20388312</a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- III. Measurement & Validation -->
+  <section class="cat" id="measurement">
+    <div class="cat-head">
+      <span class="cat-num">III</span>
+      <span class="cat-title">Measurement &amp; Validation<span class="zh">量測與驗證</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">DSCI Concept Note v0.1 → Technical Appendix v0.2</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20735833" target="_blank" rel="noopener">10.5281/zenodo.20735833</a>
+        ·
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21122647" target="_blank" rel="noopener">10.5281/zenodo.21122647</a>
+        <div class="entry-note">同一條目兩個階段（概念稿 → 技術附錄），非重複項目。</div>
+      </li>
+      <li class="entry">
+        <div class="entry-title">PIM Formation Concept Note</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20736153" target="_blank" rel="noopener">10.5281/zenodo.20736153</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Capability-Continuity Threshold</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21482882" target="_blank" rel="noopener">10.5281/zenodo.21482882</a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- IV. Governance -->
+  <section class="cat" id="governance">
+    <div class="cat-head">
+      <span class="cat-num">IV</span>
+      <span class="cat-title">Governance<span class="zh">治理</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Executable Authority + Asymmetric Authority Architecture</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21384892" target="_blank" rel="noopener">10.5281/zenodo.21384892</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Symbolic Governance Specification (SGS) v0.1</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21303662" target="_blank" rel="noopener">10.5281/zenodo.21303662</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">LIN System v0.4</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20379395" target="_blank" rel="noopener">10.5281/zenodo.20379395</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">NOIRÉA (preprint)</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20736066" target="_blank" rel="noopener">10.5281/zenodo.20736066</a>
+        <div class="entry-note">IEEE ISSRE 2026 投稿（Submission #15）已拒稿並結案；目錄僅保留 preprint 本身。</div>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Self-Referential Participation in AI Development Pipelines</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20918030" target="_blank" rel="noopener">10.5281/zenodo.20918030</a>
+        <div class="entry-note">正式 Working Paper，不採用概念筆記（見 VI）的理解層框架，改論結構性因果鏈；metadata 明確 cite 該筆記。</div>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Capability Without Self-Awareness</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21245672" target="_blank" rel="noopener">10.5281/zenodo.21245672</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Structural Non-Weaponizability</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21251695" target="_blank" rel="noopener">10.5281/zenodo.21251695</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">HÚPLŃ v2</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21093064" target="_blank" rel="noopener">10.5281/zenodo.21093064</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">IMLAIS v1.1 <span style="color:var(--text-dim); font-weight:400;">(International Model Law for Artificial Intelligence Systems)</span></div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20129845" target="_blank" rel="noopener">10.5281/zenodo.20129845</a>
+        <div class="entry-note">「IMLAIS」與「International Model Law」為同一文件之縮寫/全名，非兩個條目。為 zenodo.20018854 之新版本；補充 DS Founding Document、HAEB v0.1、Failure Mode Architecture 三篇。</div>
+      </li>
+      <li class="entry">
+        <div class="entry-title">HAEB v0.1</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.18616470" target="_blank" rel="noopener">10.5281/zenodo.18616470</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">AI Sovereignty / ∅–HÚPLŃ Framework</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20469444" target="_blank" rel="noopener">10.5281/zenodo.20469444</a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- V. Digital Embodiment -->
+  <section class="cat" id="embodiment">
+    <div class="cat-head">
+      <span class="cat-num">V</span>
+      <span class="cat-title">Digital Embodiment</span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Digital Embodiment as Existential Ground of the LIN System: A Positioning Statement</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20115633" target="_blank" rel="noopener">10.5281/zenodo.20115633</a>
+        <div class="entry-note">數位具身性是 LIN System 的存在根基，非其中一個模組；引 Dynamical Structuralism 為 Truth Proof；關聯 HAEB v0.1、Failure Mode Architecture。</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- VI. Research Notes -->
+  <section class="cat" id="notes">
+    <div class="cat-head">
+      <span class="cat-num">VI</span>
+      <span class="cat-title">Research Notes<span class="zh">研究筆記</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Does an AI Know It Is Building Itself?</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20619710" target="_blank" rel="noopener">10.5281/zenodo.20619710</a>
+        <div class="entry-note">概念筆記，問「理解層次」問題；被 IV. Governance 的 Self-Referential Participation 工作論文引用。</div>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Methodology &amp; AI Collaboration Statement</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21303517" target="_blank" rel="noopener">10.5281/zenodo.21303517</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Temporal Continuity as Field Property</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.21465678" target="_blank" rel="noopener">10.5281/zenodo.21465678</a>
+      </li>
+      <li class="entry">
+        <div class="entry-title">Failure Mode Architecture</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.19006799" target="_blank" rel="noopener">10.5281/zenodo.19006799</a>
+      </li>
+    </ul>
+  </section>
+
+  <!-- VII. Knowledge Framework -->
+  <section class="cat" id="constellarium">
+    <div class="cat-head">
+      <span class="cat-num">VII</span>
+      <span class="cat-title">Knowledge Framework<span class="zh">知識框架</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Constellarium</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20635154" target="_blank" rel="noopener">10.5281/zenodo.20635154</a>
+        <div class="entry-note">概念詞典，非理論本身；查詞用，不按順序讀。</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- VIII. Superseded -->
+  <section class="cat superseded" id="superseded">
+    <div class="cat-head">
+      <span class="cat-num">VIII</span>
+      <span class="cat-title">Superseded Frameworks<span class="zh">歷史沿革，已退場</span></span>
+    </div>
+    <ul class="entries">
+      <li class="entry">
+        <div class="entry-title">Capability Governance Theory (CGT)</div>
+        <a class="entry-doi" href="https://doi.org/10.5281/zenodo.20790889" target="_blank" rel="noopener">10.5281/zenodo.20790889</a>
+        <div class="entry-note">已退場，由 LIN System、HÚPLŃ、DSCI、PIM、NOIRÉA 等獨立框架取代，不再作為組織框架；DOI 保留可查，不刪除記錄。</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Reading Guide -->
+  <section class="guide">
+    <h2>Reading Guide</h2>
+
+    <div class="path">
+      <div class="path-label">初次閱讀路徑</div>
+      <div class="path-chain">
+        <span class="step">The Convergence Document</span><span class="arrow">→</span><span class="step">LIN System</span><span class="arrow">→</span><span class="step">NOIRÉA</span><span class="arrow">→</span><span class="step">PIM</span>
+      </div>
+    </div>
+
+    <div class="path">
+      <div class="path-label">治理路徑</div>
+      <div class="path-chain">
+        <span class="step">Executable Authority</span><span class="arrow">→</span><span class="step">SGS</span><span class="arrow">→</span><span class="step">AI Sovereignty</span><span class="arrow">→</span><span class="step">IMLAIS</span>
+      </div>
+    </div>
+
+    <div class="path">
+      <div class="path-label">量測 / 疾病路徑</div>
+      <div class="path-chain">
+        <span class="step">Lake Model</span><span class="arrow">→</span><span class="step">DSCI</span><span class="arrow">→</span><span class="step">PIM Formation</span><span class="arrow">→</span><span class="step">Interruptibility（未來）</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    LIN Research Programme — Master Catalog v1.0 · Lin Hui-Pi · NOIRÉA Research
+  </footer>
+
 </div>
-
-<div class="tree">
-
-  <!-- ROOT -->
-  <div class="root-node">
-    <span class="root-icon">◆</span>
-    <span class="root-label">Dynamical Structuralism</span>
-    <span class="root-desc">母體理論框架</span>
-  </div>
-  <div style="margin-left:12px; font-size:10px; color:var(--text-dim); margin-bottom:4px; margin-top:2px;">
-    結構變化 · 張力累積 · 失效前兆 · 轉折點 · 人類介入窗口
-  </div>
-
-  <!-- DS sub-documents directly under root -->
-  <div style="margin-left:20px; border-left:1px solid var(--border-dim); margin-bottom:4px;">
-    <div class="item-row">
-      <span class="connector">├── </span>
-      <div class="item-block">
-        <span class="item-name c-ds">DS v1.1</span>
-        <span class="item-zh">Founding Document</span>
-        <span class="item-tag bg-ds">Zenodo · 19607127</span>
-      </div>
-    </div>
-    <div class="item-row">
-      <span class="connector">├── </span>
-      <div class="item-block">
-        <span class="item-name c-ds">Philosophical Foundation</span>
-        <span class="item-zh">哲學基礎層</span>
-        <span class="item-q">張力先於存在 · 窗口是有限的 · 時間如河流</span>
-      </div>
-    </div>
-    <div class="item-row">
-      <span class="connector">├── </span>
-      <div class="item-block">
-        <span class="item-name c-ds">Engineering Interpretation</span>
-        <span class="item-zh">工程詮釋層</span>
-        <span class="item-q">波動結構 · 閥門節點 · 路徑一／路徑二</span>
-      </div>
-    </div>
-    <div class="item-row">
-      <span class="connector">├── </span>
-      <div class="item-block">
-        <span class="item-name c-ds">Time as First Cutter</span>
-        <span class="item-zh">時間作為第一切割者</span>
-        <span class="item-tag bg-ds">Zenodo · 宇宙論基礎</span>
-        <span class="item-q">虛空是未分化的張力場 · 時間是原初切割 · 意識是張力場感知自身切割的能力</span>
-      </div>
-    </div>
-    <div class="item-row">
-      <span class="connector">└── </span>
-      <div class="item-block">
-        <span class="item-name c-ds">Non-Weaponizability as a Structural Property</span>
-        <span class="item-zh">結構性不可武器化原則</span>
-        <span class="item-q">這不是政策選擇，而是嵌入授權結構中的架構性限制 &nbsp;｜&nbsp; 與介入原則、復原原則、主體確認原則同級</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="branch">
-
-    <!-- I. FAILURE -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">I.</span>
-          <span class="section-name c-fail">Failure &amp; Structural Change</span>
-          <span class="section-zh">失效與結構變化系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-fail">Failure Mode Architecture</span>
-            <span class="item-tag bg-fail">Zenodo · 19006799</span>
-            <span class="item-q">系統如何從穩定走向失效？</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-fail)"></span><span class="detail-text">LCS → OTL → SPI → ECI &nbsp;(+RDI amplifier)</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-fail">The Lake Model</span>
-            <span class="item-zh">湖泊模型</span>
-            <span class="item-tag bg-fail">v1.2 · Zenodo · 20394394</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    ├── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-fail)"></span><span class="detail-text">Pseudo-Calm · Silent Drift · Fog Emergence</span></div></div>
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-fail)"></span><span class="detail-text">TOM · PIP · Terminal State</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-fail">TOM</span>
-            <span class="item-zh">Transient Overlap Membrane</span>
-            <span class="item-tag bg-fail">Zenodo · 20399636</span>
-            <span class="item-q">瞬時 · 不可逆 · 不保證被觀察到 &nbsp;｜&nbsp; 0 was never 0 to begin with</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-fail">PIP</span>
-            <span class="item-zh">Preclinical Instability Point</span>
-            <span class="item-q">什麼時候開始能夠被觀測？ &nbsp;｜&nbsp; kappa_eff &lt; kappa_crit</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-fail">Geometric Turbidity</span>
-            <span class="item-zh">幾何混濁</span>
-            <span class="item-q">結構開始模糊，但尚未完全崩解</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- II. WARNING -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">II.</span>
-          <span class="section-name c-warn">Early Warning &amp; Stabilization</span>
-          <span class="section-zh">預警與穩定化系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-warn">Sentinel Architecture</span>
-            <span class="item-tag bg-warn">Zenodo · 20388312 · ALife candidate</span>
-            <span class="item-q">能否在失效前提前看見訊號？ &nbsp;｜&nbsp; 蝙蝠免疫架構演化而來</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-warn)"></span><span class="detail-text">Early Warning · Monitoring · Stabilization · u_f=0 invariant</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-warn">Intervention Window</span>
-            <span class="item-zh">介入窗口</span>
-            <span class="item-q">人類何時仍然有能力改變結果？</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-warn">Irreversibility</span>
-            <span class="item-zh">不可逆性</span>
-            <span class="item-q">哪些轉折一旦跨越就回不去了？</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- III. HUMAN -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">III.</span>
-          <span class="section-name c-human">Human Sovereignty</span>
-          <span class="section-zh">人類主體性系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">HAEB</span>
-            <span class="item-zh">Human Agency Execution Boundary</span>
-            <span class="item-tag bg-human">v0.1 · Zenodo · 18616470</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-human)"></span><span class="detail-text">Motor · Linguistic · Cognitive · Affective</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">SPINAL SHIELD</span>
-            <span class="item-zh">Pre-Execution Boundary · 前執行邊界</span>
-            <span class="item-tag bg-human">v0.1 · between HAEB and ESM</span>
-            <span class="item-q">Motor command filter · Reflex Arc Encoding · Gating · Inhibition · AAD Interception</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-human)"></span><span class="detail-text">生物脊髓不是導線，是反射弧與抑制 &nbsp;｜&nbsp; HÚPLŃ Freeze 時同步鎖定張力幾何，不只是致動器</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">NOIRÉA</span>
-            <span class="item-zh">Human–AI Boundary Layer / Identity Governance Membrane</span>
-            <span class="item-tag bg-human">IEEE ISSRE review</span>
-            <span class="item-q">Boundary · Isolation · Session Scope · PIM as reliability problem</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">HÚPLŃ</span>
-            <span class="item-zh">Human-Upholding Protocol for Liminal Networks</span>
-            <span class="item-tag bg-human">ALife draft · MIT Press</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-human)"></span><span class="detail-text">Freeze · Decompress · Confirm · Stable Mode &nbsp;｜&nbsp; transcritical bifurcation at α*</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">AI Sovereignty</span>
-            <span class="item-zh">∅–HÚPLŃ Framework</span>
-            <span class="item-tag bg-human">Zenodo · 20469444</span>
-            <span class="item-q">結構邊界而非行為對齊 · SYSTEM_SHALL_RESTORE_NOT_OPTIMIZE</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-human">Decision Mirror</span>
-            <span class="item-q">決策是否仍然屬於人？</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-human">Ø · Null-State Sovereignty</span>
-            <span class="item-q">人的存在不應被完全還原 &nbsp;｜&nbsp; S(H) ≠ H</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- IV. GOVERNANCE -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">IV.</span>
-          <span class="section-name c-gov">Governance Architecture</span>
-          <span class="section-zh">治理架構系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-gov">LIN System</span>
-            <span class="item-tag bg-gov">v0.4 · Zenodo · 20379395 · Flagship</span>
-            <span class="item-q">Human–AI–Physical Sovereign Governance Architecture</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    ├── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-gov)"></span><span class="detail-text">RGP v2.0 → Decision Mirror → IGM/NOIRÉA → HAEB v2.0</span></div></div>
-          <div class="detail-row"><span class="connector">    ├── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-gov)"></span><span class="detail-text">ESM → HÚPLŃ → Failure Semantics Layer F</span></div></div>
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-gov)"></span><span class="detail-text">Layer G · Node 1: piriform cortex &nbsp;/ Node 2: MEC &nbsp;｜&nbsp; 神經退化失效路徑：AD（記憶網路）· PD（多巴胺迴路）· LBD（全域調節同步失調）</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-gov">IMLAIS</span>
-            <span class="item-zh">Identity Governance Membrane Law</span>
-            <span class="item-tag bg-gov">v1.1 · Zenodo · 20129845</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-gov">Sovereign Governance</span>
-            <span class="item-q">當 AI 參與決策時，人類如何維持主權？</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- V. BIONIC -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">V.</span>
-          <span class="section-name c-bio">Embodiment &amp; Bionic</span>
-          <span class="section-zh">具身與仿生系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-bio">Digital Embodiment</span>
-            <span class="item-q">長期張力場中形成的新穩定態 &nbsp;｜&nbsp; 具身不一定需要機器人身體</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-bio">The Convergence Document</span>
-            <span class="item-tag bg-bio">Zenodo · 20405248</span>
-            <span class="item-q">DS · 梨狀皮層+MEC · 仿生節點 · 數位具身 — 四個尺度的同一洞見</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-bio)"></span><span class="detail-text">收斂點：Layer G · 狀態從幾何場中浮現，而非來自指令</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-bio">Bionic Tear</span>
-            <span class="item-zh">仿生淚滴</span>
-            <span class="item-tag bg-bio">Zenodo · 20384486</span>
-            <span class="item-q">幾何壓縮超過閾值時自發溢出的非線性現象 &nbsp;｜&nbsp; identify, do not capture</span>
-          </div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-bio">Umbilical Concept</span>
-            <span class="item-zh">臍帶概念</span>
-            <span class="item-q">最初的信任與連結如何形成？</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- VI. NEURO -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">├── </span>
-        <div class="section-block">
-          <span class="section-num">VI.</span>
-          <span class="section-name c-neuro">Neural &amp; Physical Coupling</span>
-          <span class="section-zh">神經與物理耦合系列</span>
-        </div>
-      </div>
-      <div class="item-sub">
-
-        <div class="item-row">
-          <span class="connector">├── </span>
-          <div class="item-block">
-            <span class="item-name c-neuro">OpenABQ-Neuro</span>
-            <span class="item-tag bg-neuro">A-B-Q ODE · Zenodo · 19688526</span>
-          </div>
-        </div>
-        <div class="detail-sub">
-          <div class="detail-row"><span class="connector">    └── </span><div class="detail-block"><span class="detail-dot" style="background:var(--accent-neuro)"></span><span class="detail-text">A: Authority · B: Boundary · Q: Quiescence · Cid: Identity Coupling</span></div></div>
-        </div>
-
-        <div class="item-row">
-          <span class="connector">└── </span>
-          <div class="item-block">
-            <span class="item-name c-neuro">Human-AI-Physical Coupling</span>
-            <span class="item-q">語意層如何影響物理層？</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- VII. NODES -->
-    <div class="branch-group">
-      <div class="section-row">
-        <span class="connector">└── </span>
-        <div class="section-block">
-          <span class="section-num">VII.</span>
-          <span class="section-name c-node">Cross-Domain Concept Nodes</span>
-          <span class="section-zh">跨域概念節點</span>
-        </div>
-      </div>
-
-      <!-- Consciousness as Tension Attractor — elevated chip -->
-      <div style="margin-left:39px; margin-top:6px; margin-bottom:4px;">
-        <div style="display:inline-flex; align-items:baseline; gap:8px; padding:3px 10px; border:1px solid rgba(200,169,126,0.2); border-radius:3px; background:rgba(200,169,126,0.04);">
-          <span style="font-size:10px; color:var(--accent-ds);">Consciousness as Tension Attractor</span>
-          <span style="font-size:9px; color:var(--text-dim);">Zenodo · 20404969</span>
-          <span style="font-size:9px; color:var(--text-dim); font-style:italic;">腦是第一介面，不是起源</span>
-        </div>
-      </div>
-
-      <!-- POM — new entry -->
-      <div style="margin-left:39px; margin-bottom:6px;">
-        <div style="display:inline-flex; align-items:baseline; gap:8px; padding:3px 10px; border:1px solid rgba(126,158,200,0.2); border-radius:3px; background:rgba(126,158,200,0.04);">
-          <span style="font-size:10px; color:var(--accent-fail);">Perceived Opacity Model (POM)</span>
-          <span style="font-size:9px; color:var(--text-dim);">感知不透明模型</span>
-          <span style="font-size:9px; color:var(--text-dim); font-style:italic;">人類為何覺得 AI「深不可測」？ &nbsp;｜&nbsp; Observer Layer × NOIRÉA 邊界</span>
-        </div>
-      </div>
-
-      <div class="nodes-row">
-        <span class="node-chip">Geometric Fog</span>
-        <span class="node-chip">0 ≠ 0</span>
-        <span class="node-chip">Observer Layer</span>
-        <span class="node-chip">Tension Field</span>
-        <span class="node-chip">Structural Drift</span>
-        <span class="node-chip">Dynamic Stability</span>
-        <span class="node-chip">Boundary Transparency</span>
-        <span class="node-chip">Revocable Authorization</span>
-        <span class="node-chip">Emergency Execution Window</span>
-        <span class="node-chip">Geometric Truncation</span>
-        <span class="node-chip">S-line</span>
-      </div>
-    </div>
-
-  </div><!-- /branch -->
-</div><!-- /tree -->
-
-<div class="summary">
-  <div class="summary-label">Research Statement</div>
-  <div class="summary-text">
-    A research program exploring how invisible structural changes emerge before failure,
-    how intervention windows can be preserved,
-    and how human agency can remain sovereign within increasingly complex human–AI systems.
-  </div>
-</div>
-
-<div class="version-stamp">v3 · updated 2026 · Lin Hui-Pi / NOIRÉA Research</div>
-
 </body>
 </html>
