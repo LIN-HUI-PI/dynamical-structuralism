@@ -2,11 +2,241 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<title>NOIRÉA Research</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOIRÉA Research — Dynamical Structuralism & LIN System Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,600;1,400&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --text: #ece8db;
+    --text-dim: #8b92a0;
+    --text-faint: #5b6068;
+    --accent: #4fa3a0;
+    --accent-soft: #2f4a49;
+    --rule: #2a2f38;
+    --serif: "Noto Serif TC", "Newsreader", "Georgia", serif;
+    --sans: "Noto Sans TC", "Inter", -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 72px 24px 100px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(30px, 6vw, 42px);
+    line-height: 1.3;
+    margin: 0 0 8px;
+  }
+  .subtitle {
+    font-family: var(--serif);
+    font-size: 18px;
+    color: var(--text-dim);
+    margin: 0 0 20px;
+  }
+  .meta {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-faint);
+    margin-bottom: 40px;
+  }
+  blockquote {
+    margin: 40px 0;
+    padding: 20px 24px;
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    font-family: var(--serif);
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  blockquote p { margin: 0 0 6px; }
+  blockquote p:last-child { margin-bottom: 0; }
+  h2 {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 48px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+  p.lede {
+    color: var(--text-dim);
+    font-size: 15.5px;
+  }
+  p.lede strong { color: var(--text); font-weight: 600; }
+  .cta {
+    margin: 48px 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .cta a {
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .cta a:hover { text-decoration: underline; }
+  .cta-sub {
+    color: var(--text-faint);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 16px 0;
+  }
+  td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+    color: var(--text-dim);
+  }
+  td:first-child { color: var(--text); }
+  td a { color: var(--accent); text-decoration: none; font-family: var(--mono); font-size: 12.5px; }
+  .tracks {
+    display: block;
+  }
+  .track {
+    margin-bottom: 20px;
+  }
+  .track-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .track-chain {
+    font-size: 14.5px;
+    color: var(--text);
+  }
+  .track-note {
+    font-size: 13px;
+    color: var(--text-faint);
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .invariant {
+    font-family: var(--mono);
+    font-size: 13.5px;
+    color: var(--accent);
+    background: var(--surface);
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 8px 0;
+  }
+  footer {
+    margin-top: 72px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--mono);
+  }
+</style>
 </head>
 <body>
-<h1>NOIRÉA Research</h1>
-<p>Dynamical Structuralism & LIN System Architecture</p>
-<p><a href="./research-map.html">→ 前往 Research Map</a></p>
+<div class="wrap">
+
+  <div class="eyebrow">NOIRÉA Research · 2026</div>
+  <h1>NOIRÉA Research</h1>
+  <p class="subtitle">Dynamical Structuralism &amp; LIN System Architecture</p>
+  <div class="meta">Lin Hui-Pi · Taiwan · ORCID: 0009-0006-2536-7716</div>
+
+  <blockquote>
+    <p>真正重要的變化，往往先發生在不可見層。</p>
+    <p>The most important changes happen first in the invisible layer.</p>
+  </blockquote>
+
+  <h2>What This Is</h2>
+  <p class="lede">
+    A research programme exploring how invisible structural changes emerge before failure,
+    how intervention windows can be preserved, and how human agency can remain sovereign
+    within increasingly complex human–AI systems.
+  </p>
+  <p class="lede">
+    The theoretical foundation is <strong>Dynamical Structuralism (DS)</strong> — a philosophical
+    and engineering framework proposing that structure emerges from tension dynamics, and that
+    governance must operate at the level of geometry, not just behavior.
+  </p>
+  <p class="lede">
+    Building on this foundation, the programme develops the <strong>LIN System</strong> — a
+    Human–AI–Physical Sovereign Governance Architecture — and translates its principles into
+    an executable legal framework through <strong>IMLAIS</strong>.
+  </p>
+
+  <div class="cta">
+    <a href="./research-map.html">→ Full Research Map &amp; DOI Catalog</a>
+    <div class="cta-sub">依五層架構分類的完整研究目錄，另附閱讀路徑導覽。</div>
+  </div>
+
+  <h2>Core Invariants</h2>
+  <div class="invariant">u_h(t) = 0  ⟹  u_exec(t) = 0</div>
+  <div class="invariant">SYSTEM_SHALL_RESTORE_NOT_OPTIMIZE</div>
+  <p class="track-note">Failure Cascade: LCS → OTL → SPI → ECI</p>
+
+  <h2>Research Tracks</h2>
+  <div class="tracks">
+    <div class="track">
+      <div class="track-label">Track A — DS Dynamical Geometry</div>
+      <div class="track-chain">DS → DSCI → PIM Formation → Layer G</div>
+      <div class="track-note">Phase models · formal quantification · falsifiability</div>
+    </div>
+    <div class="track">
+      <div class="track-label">Track B — AI Governance Boundary</div>
+      <div class="track-chain">NOIRÉA → HÚPLŃ → LIN System → Spinal-Shield</div>
+      <div class="track-note">Boundary enforcement · sovereignty protection · structural non-bypassability</div>
+    </div>
+  </div>
+
+  <h2>Selected Published Work</h2>
+  <table>
+    <tr><td>Dynamical Structuralism v1.1</td><td><a href="https://doi.org/10.5281/zenodo.19607127" target="_blank" rel="noopener">10.5281/zenodo.19607127</a></td></tr>
+    <tr><td>LIN System v0.4</td><td><a href="https://doi.org/10.5281/zenodo.20379395" target="_blank" rel="noopener">10.5281/zenodo.20379395</a></td></tr>
+    <tr><td>HÚPLŃ v2 (AI Sovereignty)</td><td><a href="https://doi.org/10.5281/zenodo.21093064" target="_blank" rel="noopener">10.5281/zenodo.21093064</a></td></tr>
+    <tr><td>IMLAIS v1.1</td><td><a href="https://doi.org/10.5281/zenodo.20129845" target="_blank" rel="noopener">10.5281/zenodo.20129845</a></td></tr>
+    <tr><td>Constellarium v0.1</td><td><a href="https://doi.org/10.5281/zenodo.20635154" target="_blank" rel="noopener">10.5281/zenodo.20635154</a></td></tr>
+  </table>
+  <p class="track-note">Full catalog and reading paths: see <a href="./research-map.html" style="color:var(--accent);">Research Map</a>.</p>
+
+  <h2>License</h2>
+  <p class="lede">CC BY 4.0 — Lin Hui-Pi / NOIRÉA Research</p>
+  <p class="track-note">
+    All intellectual, ethical, and operational responsibility remains with the author.
+    AI systems participated as bounded research collaborators; no authorship or decision
+    authority was delegated to automated systems.
+  </p>
+
+  <footer>NOIRÉA Research · Lin Hui-Pi · 2026</footer>
+
+</div>
 </body>
 </html>
