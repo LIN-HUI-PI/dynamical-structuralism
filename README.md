@@ -83,7 +83,8 @@ SYSTEM_SHALL_RESTORE_NOT_OPTIMIZE
 | Constellarium v0.1 | [10.5281/zenodo.20635154](https://doi.org/10.5281/zenodo.20635154) |
 | PIM Formation Concept Note | [10.5281/zenodo.20746528](https://doi.org/10.5281/zenodo.20746528) |
 
-Full DOI list: see `LIN-System-Complete-Reference.md` Section IX.
+Full research catalog and reading paths: see [Research Map](./research-map.html).
+
 
 ---
 
