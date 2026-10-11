@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>三道閥門框架 — NOIRÉA Research</title>
+<meta name="description" content="Three Valve Framework：生命體、模型、數位模擬三道閥門的巢狀結構，以及它在阿茲海默與膠質瘤上的應用構想。">
+<style>
+:root{--ink:#1a1a1a;--paper:#f7f5f0;--fold:#e2ddd2;--cut:#b23a25;--mute:#5f5b55;--card:#fff;--deep:#2d2926}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:4.2rem}
+body{background:var(--paper);color:var(--ink);font-family:"Noto Serif TC","Songti TC","PMingLiU",Georgia,serif;line-height:1.85;font-size:17px}
+a{color:var(--cut);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--cut);outline-offset:2px}
+.wrap{max-width:62rem;margin:0 auto;padding:0 1.2rem}
+nav.top{position:sticky;top:0;z-index:10;background:rgba(247,245,240,.96);border-bottom:1px solid var(--fold)}
+nav.top .wrap{display:flex;gap:1.4rem;align-items:center;overflow-x:auto;padding-top:.7rem;padding-bottom:.7rem;white-space:nowrap;font-size:.9rem}
+nav.top .brand{font-weight:600;letter-spacing:.06em;color:var(--ink);text-decoration:none}
+nav.top a{text-decoration:none;color:var(--mute)}
+nav.top a:hover{color:var(--cut)}
+header.hero{background:var(--deep);color:var(--paper);padding:4.5rem 0 3.5rem}
+.eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:#cfc9bd}
+h1{font-weight:400;font-size:clamp(1.9rem,6vw,3.2rem);line-height:1.2;margin:.8rem 0 1rem}
+h1 em{color:#f0a08e;font-style:italic}
+.hero p.lead{max-width:40rem;color:#e4dfd4}
+.stats{display:flex;flex-wrap:wrap;gap:1.6rem;margin-top:2rem;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;color:#cfc9bd}
+.stats b{display:block;font-size:1.7rem;color:var(--paper);font-weight:500;font-family:Georgia,serif}
+section.sec{padding:3.6rem 0 1rem}
+h2{font-weight:400;font-size:1.55rem;margin-bottom:.4rem}
+h2 small{display:block;font-family:ui-monospace,Menlo,monospace;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:.4rem}
+.intro{max-width:44rem;color:var(--mute);margin-bottom:1.4rem}
+.pair{display:grid;gap:1.4rem;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr))}
+.card{background:var(--card);border:1px solid var(--fold);border-top:3px solid var(--ink);padding:1.4rem 1.3rem}
+.card h3{font-weight:500;font-size:1.25rem;margin-bottom:.5rem}
+.card p{margin-bottom:.8rem}
+.layers{list-style:none;margin:.4rem 0 1rem}
+.layers li{display:flex;gap:.8rem;padding:.35rem 0;border-bottom:1px dashed var(--fold)}
+.layers .k{font-family:ui-monospace,Menlo,monospace;font-size:.78rem;color:var(--cut);min-width:4.2rem;padding-top:.2rem}
+.cascade{font-family:ui-monospace,Menlo,monospace;font-size:.85rem;background:var(--paper);border:1px solid var(--fold);padding:.7rem .9rem;margin:.4rem 0 1rem;line-height:1.7}
+.rows{list-style:none}
+.row{padding:.8rem 0;border-top:1px solid var(--fold)}
+.row:last-child{border-bottom:1px solid var(--fold)}
+.rowhead{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}
+.rowhead a,.rowhead>span:not(.badge):not(.ver){font-weight:500}
+.ver{font-family:ui-monospace,Menlo,monospace;font-size:.78rem;color:var(--mute);border:1px solid var(--fold);padding:0 .45rem}
+.badge{font-family:ui-monospace,Menlo,monospace;font-size:.68rem;letter-spacing:.06em;padding:.05rem .5rem;border:1px solid;border-radius:2px;white-space:nowrap}
+.badge.public{color:#1f6b45;border-color:#1f6b45}
+.badge.wip{color:#8a5a00;border-color:#8a5a00}
+.badge.retired{color:var(--mute);border-color:var(--mute)}
+.doi{display:block;font-family:ui-monospace,Menlo,monospace;font-size:.74rem;color:var(--mute);margin-top:.15rem}
+.note{color:var(--mute);font-size:.92rem;margin-top:.2rem}
+.branches-nav{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 .5rem}
+.branches-nav a{font-size:.85rem;text-decoration:none;color:var(--ink);border:1px solid var(--fold);background:var(--card);padding:.2rem .7rem;border-radius:2px}
+.branches-nav a:hover{border-color:var(--cut);color:var(--cut)}
+.branch{padding:2.2rem 0 .6rem}
+.branch h3{font-weight:500;font-size:1.3rem;border-left:3px solid var(--cut);padding-left:.7rem;margin-bottom:.4rem}
+.branch .desc{color:var(--mute);max-width:46rem;margin-bottom:.7rem}
+.cta{margin:.2rem 0 .9rem}
+.btn{display:inline-block;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;letter-spacing:.06em;color:var(--paper);background:var(--cut);text-decoration:none;padding:.45rem 1rem;border-radius:2px}
+.btn:hover{background:#8f2c1b}
+.ext{margin-top:.6rem;font-size:.9rem}
+.filter{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;margin:1rem 0}
+.filter input{flex:1 1 14rem;font:inherit;font-size:.95rem;padding:.45rem .7rem;border:1px solid var(--fold);background:var(--card);border-radius:2px}
+.filter button{font:inherit;font-size:.85rem;padding:.4rem .8rem;border:1px solid var(--fold);background:var(--card);cursor:pointer;border-radius:2px}
+.filter button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.hidden{display:none}
+.br{font-size:.78rem;color:var(--mute);margin-left:auto}
+footer{margin-top:4rem;background:var(--deep);color:#d6d1c6;padding:2.6rem 0 3rem;font-size:.92rem}
+footer ul{margin:.6rem 0 1rem 1.2rem}
+footer a{color:#f0a08e}
+@media (max-width:600px){body{font-size:16px}header.hero{padding-top:3rem}}
+
+.nest{border:2px solid var(--ink);padding:1rem;background:var(--card)}
+.nest .lbl{font-family:ui-monospace,Menlo,monospace;font-size:.78rem;color:var(--cut);display:block}
+.nest .nest{margin-top:.8rem;background:var(--paper);border-color:var(--mute)}
+.nest .nest .nest{background:var(--card);border-color:var(--cut)}
+.nest p{font-size:.92rem;color:var(--mute)}
+.tbl{width:100%;border-collapse:collapse;font-size:.92rem;background:var(--card);border:1px solid var(--fold)}
+.tbl th,.tbl td{padding:.55rem .7rem;border-bottom:1px solid var(--fold);text-align:left;vertical-align:top}
+.tbl th{font-weight:600;background:var(--paper)}
+.tblwrap{overflow-x:auto}
+.tbl{min-width:34rem}
+.tbl td:first-child,.tbl th:first-child{min-width:6rem}
+.quote{font-size:1.5rem;line-height:1.5;margin:.6rem 0 .2rem}
+.formula{font-family:ui-monospace,Menlo,monospace;background:var(--paper);border:1px solid var(--fold);padding:.7rem .9rem;margin:.5rem 0;overflow-x:auto}
+.three{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));margin-top:1rem}
+.three h3{font-weight:500;font-size:1.05rem;margin-bottom:.3rem}
+.three ul{margin:.4rem 0 0 1.1rem;color:var(--mute);font-size:.92rem}
+</style>
+</head>
+<body>
+<nav class="top" aria-label="主要導覽"><div class="wrap">
+<a class="brand" href="index.html">← NOIRÉA Research</a>
+<a href="#structure">結構</a>
+<a href="#noirea">與 NOIRÉA</a>
+<a href="#failure">失效類型</a>
+<a href="#apps">應用</a>
+<a href="#limits">限制</a>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+<div class="eyebrow">LIN System · Foundations / Sovereign Interface</div>
+<h1><em>三道閥門</em><br>Three Valve Framework</h1>
+<p class="quote">預測，不是偵測。</p>
+<p class="lead">疾病（排除外傷）本質上是內部漂移。沒有外來入侵者可以偵測，只有內部張力的方向可以讀取。閥門介入的不是「某個東西要來」，而是「系統自己正在走向哪裡」。</p>
+<p style="margin-top:1rem"><span class="badge wip">進行中</span> <span class="ver">v1.1</span> <span class="ver">作者自記 2026.03.30</span> <span class="ver">尚無獨立 DOI</span></p>
+</div></header>
+
+<main class="wrap">
+
+<section class="sec" id="origin">
+<h2><small>Origin</small>起源</h2>
+<p class="intro">本框架原生於人機共存系統研究，因接觸「長期疲勞導致內耳失衡」的外部文章，觸發內部連結，延伸出三道閥門的雛形。</p>
+<p class="intro">知識論立場為由下而上：現象先行，從現象中辨識可控點，再模型化，再數位定位。</p>
+</section>
+
+<section class="sec" id="structure">
+<h2><small>Structure</small>三道閥門，巢狀結構</h2>
+<p class="intro">三道為巢狀結構，非串聯步驟，也不是依序啟動的三個開關。</p>
+<div class="nest"><span class="lbl">第三道</span><strong>數位模擬閥門</strong>（數位細胞／量子孿生）
+<p>邏輯結構 → 數位模擬 → 精準座標</p>
+<div class="nest"><span class="lbl">第二道</span><strong>模型閥門</strong>
+<p>漂移 → 可操作邏輯結構</p>
+<div class="nest"><span class="lbl">第一道</span><strong>生命體閥門</strong>
+<p>真實生物系統的內部漂移</p></div></div></div>
+<div class="three">
+<div class="card"><h3>第一道｜生命體閥門</h3>
+<p>在真實生物系統中讀取疾病形成的內部漂移。對象為純內部動力學：系統在正常狀態下慢慢失去可控的過程。</p>
+<ul><li>觀察對象是真實生物系統</li><li>讀取內部張力漂移，不是外部攻擊</li><li>問題：系統自己正在走向哪裡</li></ul></div>
+<div class="card"><h3>第二道｜模型閥門</h3>
+<p>將第一道觀察到的漂移抽象化，建立可操作的邏輯結構，找出可控點的位置。</p>
+<ul><li>不是新的觀察，而是第一道觀察的結構化</li><li>輸入：生物現象中的漂移模式</li><li>輸出：標定可控點位置的邏輯模型</li></ul></div>
+<div class="card"><h3>第三道｜數位模擬閥門</h3>
+<p>用數位細胞在虛擬端將系統動力學跑完，標定閥門設立點，讓介入點從直覺變成可被定位的座標。</p>
+<ul><li>不替代生物觀察，而是讓觀察精準化</li><li>輸出：可被定位的座標（介入點）</li></ul></div>
+</div>
+<p class="intro" style="margin-top:1rem">第三道能運作，因為有第二道的模型；第二道能建模，因為有第一道的真實觀察。反過來不成立：沒有第一道的生物觀察，後兩道沒有根基。</p>
+</section>
+
+<section class="sec" id="noirea">
+<h2><small>Relation to NOIRÉA</small>與 NOIRÉA 的位置區分</h2>
+<p class="intro">閥門在膜的內側運作，NOIRÉA 是膜本身。</p>
+<div class="tblwrap"><table class="tbl">
+<tr><th></th><th>三道閥門</th><th>NOIRÉA</th></tr>
+<tr><th>位置</th><td>膜的內側</td><td>膜本身</td></tr>
+<tr><th>觀察方向</th><td>向內（內部漂移）</td><td>內外交界（張力接觸面）</td></tr>
+<tr><th>處理對象</th><td>系統自己的軌跡偏移</td><td>內部狀態與外部刺激的相遇</td></tr>
+<tr><th>核心動作</th><td>讀取 → 建模 → 定位</td><td>感知張力 → 邊界治理</td></tr>
+</table></div>
+</section>
+
+<section class="sec" id="failure">
+<h2><small>Failure dynamics</small>與三種失效動力學的對應</h2>
+<div class="tblwrap"><table class="tbl">
+<tr><th>失效類型</th><th>閥門角色</th></tr>
+<tr><td>Type II：內部過載（阿茲海默）</td><td>第一道直接觀察的核心場景：系統內部累積超過處理能力。</td></tr>
+<tr><td>Type III：內部矛盾（膠質瘤）</td><td>第一道的深層情境：內建邏輯矛盾導致張力指向不可逆吸引子。</td></tr>
+<tr><td>Type I：外部入侵</td><td>不在閥門的主要管轄範圍；屬 NOIRÉA（膜本身）的工作。</td></tr>
+</table></div>
+</section>
+
+<section class="sec" id="abq">
+<h2><small>A-B-Q ODE</small>與 A-B-Q 的連結</h2>
+<p class="intro">A-B-Q 模擬器中退化變數 D 的 logistic growth（自我加速擴張），是第一道閥門要讀取的生物現象。第二道將其建模為下式，第三道在數位端跑完模擬，標定 D 何時越過臨界點，即閥門應設立的座標。</p>
+<div class="formula">dD = ρ·D·(1 − D) − κ·u_a</div>
+<p class="note">狀態：此式與 Abq.py 的 dD 一行相符，這是目前唯一確認的對應。生物映射、參數校準與臨界點的位置尚未建立。</p>
+</section>
+
+<section class="sec" id="apps">
+<h2><small>Applications</small>應用領域與狀態</h2>
+<div class="tblwrap"><table class="tbl">
+<tr><th>領域</th><th>閥門問題</th><th>狀態</th></tr>
+<tr><td>阿茲海默</td><td>Type II 的核心場景。第三道範例：量子孿生 Aβ 在數位端標定蛋白質的最早變化點，再同步介入。相關的行為量測研究見「神經動態研究計畫書」，探討功能仍維持時控制成本代理量是否已變化。</td><td><span class="badge wip">進行中</span> 概念框架與方法討論稿；數位孿生為研究構想，尚無實作。</td></tr>
+<tr><td>膠質瘤</td><td>Type III。疾病之前是否存在閥門還能被關上的點（最早變化點／最後可控點），以日夜相位假說切入。</td><td><span class="badge wip">進行中</span> 理論、計算與文獻取向，不含濕實驗。<a href="index.html#glioma">分支頁</a></td></tr>
+<tr><td>其他領域</td><td>同一閥門概念預期延伸至模型漂移、金融、軍事等領域的關閉閥門。</td><td>方向；尚無獨立文件。</td></tr>
+</table></div>
+</section>
+
+<section class="sec" id="limits">
+<h2><small>Scope and limits</small>範圍與限制</h2>
+<ul class="rows">
+<li class="row"><p>本框架為作者提出的概念框架，未經同儕審查，也沒有獨立 DOI。</p></li>
+<li class="row"><p>「數位細胞」與「量子孿生」是研究構想。本頁不主張已有量子計算實作，也不主張已具備疾病預測能力。</p></li>
+<li class="row"><p>阿茲海默與膠質瘤相關內容屬理論與計算取向，不構成臨床建議，本頁也不提供醫療服務。</p></li>
+<li class="row"><p>「作者自記 2026.03.30」為作者的版本紀錄日期，不是登記或認證。</p></li>
+</ul>
+<p class="cta" style="margin-top:1.4rem"><a class="btn" href="index.html#branches">← 回到分支</a></p>
+</section>
+
+</main>
+<footer><div class="wrap"><p>© 林慧碧 · NOIRÉA Research</p></div></footer>
+</body>
+</html>
