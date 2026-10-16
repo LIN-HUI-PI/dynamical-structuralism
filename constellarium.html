@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Constellarium — 概念切割藏經閣</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f7f5f0;
+    --fold: #e8e4dc;
+    --cut: #c8402a;
+    --ghost: #9a9690;
+    --deep: #2d2926;
+    --entry-bg: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── PREFACE ── */
+  .preface {
+    border-bottom: 1px solid var(--fold);
+    background: var(--deep);
+    color: var(--paper);
+    padding: 2.5rem 2rem;
+  }
+
+  .preface-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 960px;
+  }
+
+  @media (max-width: 640px) {
+    .preface-inner { grid-template-columns: 1fr; gap: 2rem; }
+  }
+
+  .preface-text p {
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #c8c4bc;
+    margin-bottom: 0.8rem;
+  }
+
+  .preface-text strong { color: var(--paper); font-weight: 500; }
+
+  .preface-core {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.05rem !important;
+    color: var(--paper) !important;
+    font-style: italic;
+    border-left: 2px solid var(--cut);
+    padding-left: 1rem;
+    margin-top: 1.2rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .dtype-legend {
+    border-left: 1px solid rgba(255,255,255,0.1);
+    padding-left: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    .dtype-legend { border-left: none; border-top: 1px solid rgba(255,255,255,0.1); padding-left: 0; padding-top: 1.5rem; }
+  }
+
+  .dtype-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-bottom: 1rem;
+  }
+
+  .dtype-item {
+    display: flex;
+    gap: 0.85rem;
+    margin-bottom: 0.85rem;
+    align-items: flex-start;
+  }
+
+  .dtype-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--cut);
+    min-width: 2rem;
+    padding-top: 0.1rem;
+    letter-spacing: 0.06em;
+  }
+
+  .dtype-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    color: #c8c4bc;
+    line-height: 1.5;
+  }
+
+  .dtype-desc em {
+    display: block;
+    font-style: italic;
+    color: var(--ghost);
+    font-size: 0.72rem;
+  }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 2.5rem 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 1rem;
+  }
+
+  .site-title {
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .site-title em {
+    font-style: italic;
+    color: var(--cut);
+  }
+
+  .site-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ghost);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1.8;
+    text-align: right;
+  }
+
+  /* ── CONTROLS ── */
+  .controls {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--fold);
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ghost);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-right: 0.25rem;
+  }
+
+  .filter-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--fold);
+    background: transparent;
+    color: var(--ghost);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--fold);
+  }
+
+  .filter-btn.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
+  /* ── ADD BUTTON ── */
+  .add-btn {
+    margin-left: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--cut);
+    background: transparent;
+    color: var(--cut);
+    cursor: pointer;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+
+  .add-btn:hover {
+    background: var(--cut);
+    color: white;
+  }
+
+  /* ── ARCHIVE GRID ── */
+  .archive {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  /* ── ENTRY CARD ── */
+  .entry {
+    background: var(--entry-bg);
+    border: 1px solid var(--fold);
+    border-top: 3px solid var(--ink);
+    transition: box-shadow 0.2s;
+  }
+
+  .entry:hover {
+    box-shadow: 4px 4px 0 var(--fold);
+  }
+
+  .entry-header {
+    padding: 1.25rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--fold);
+  }
+
+  .entry-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cut);
+    margin-bottom: 0.5rem;
+  }
+
+  .entry-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  .neq {
+    color: var(--cut);
+    font-weight: 300;
+    margin: 0 0.2em;
+  }
+
+  .entry-body {
+    padding: 1rem 1.25rem;
+  }
+
+  .field {
+    margin-bottom: 0.85rem;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  .field-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-bottom: 0.25rem;
+  }
+
+  .field-value {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--deep);
+  }
+
+  .confusion {
+    font-style: italic;
+    color: var(--ghost);
+    font-size: 0.88rem;
+  }
+
+  .open-q {
+    font-style: italic;
+    color: var(--cut);
+    font-size: 0.88rem;
+    border-left: 2px solid var(--cut);
+    padding-left: 0.75rem;
+    margin-top: 0.15rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.25rem;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--fold);
+    color: var(--ghost);
+    border-radius: 2px;
+  }
+
+  .related-list {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ghost);
+    line-height: 1.8;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,26,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+  }
+
+  .modal h2 {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+  }
+
+  .form-field {
+    margin-bottom: 1.1rem;
+  }
+
+  .form-field label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-bottom: 0.35rem;
+  }
+
+  .form-field input,
+  .form-field textarea,
+  .form-field select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--fold);
+    background: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+    border-radius: 2px;
+  }
+
+  .form-field input:focus,
+  .form-field textarea:focus,
+  .form-field select:focus {
+    border-color: var(--ink);
+  }
+
+  .form-field textarea { resize: vertical; min-height: 70px; }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+
+  .btn-cancel {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--fold);
+    background: transparent;
+    color: var(--ghost);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .btn-save {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  /* ── STATS BAR ── */
+  .stats {
+    padding: 0.6rem 2rem;
+    border-bottom: 1px solid var(--fold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ghost);
+    letter-spacing: 0.06em;
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .stats span { color: var(--ink); font-weight: 500; }
+
+  /* ── EMPTY ── */
+  .empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 4rem 2rem;
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    color: var(--ghost);
+    font-size: 1.1rem;
+  }
+
+  /* ── LONG-FORM ENTRY ── */
+  .entry-wide { grid-column: 1 / -1; }
+
+  .fulltext { margin: 0.2rem 0 0.85rem; }
+
+  .fulltext summary {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cut);
+    cursor: pointer;
+    padding: 0.4rem 0;
+  }
+
+  .fulltext-body {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.98rem;
+    line-height: 1.8;
+    color: var(--deep);
+    white-space: pre-wrap;
+    border-top: 1px solid var(--fold);
+    padding-top: 0.9rem;
+    margin-top: 0.4rem;
+    max-width: 640px;
+  }
+
+  /* ── CURRENT QUESTION ── */
+  .current-q {
+    padding: 2rem;
+    border-top: 1px solid var(--fold);
+    max-width: 760px;
+  }
+
+  .current-q-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ghost);
+    margin-bottom: 0.75rem;
+  }
+
+  .current-q-text {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--cut);
+    border-left: 2px solid var(--cut);
+    padding-left: 1rem;
+  }
+
+  .current-q-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ghost);
+    margin-top: 0.6rem;
+    padding-left: 1rem;
+  }
+</style>
+</head>
+<body>
+<a href="index.html#branches" style="display:block;padding:.6rem 2rem;font-family:'DM Mono',monospace;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#c8402a;text-decoration:none;border-bottom:1px solid #e8e4dc">← NOIRÉA Research</a>
+
+<header>
+  <div class="site-title"><em>Constellarium</em><br>概念切割藏經閣</div>
+  <div class="site-sub">
+    持續切割 · 持續命名<br>
+    持續定義 · 持續歸類<br>
+    v0.1 — 2026 · Lin Hui-Pi
+  </div>
+</header>
+
+<section class="preface">
+  <div class="preface-inner">
+    <div class="preface-text">
+      <p>深黑卻無邊無盡的地方。最盡頭有一束光緩緩升起。</p>
+      <p>光大家都看得到。只是每個人看見的東西不同。</p>
+      <p>有人看到 AI。有人看到認知科學。有人看到哲學。有人看到治理。有人看到宗教。有人看到複雜系統。</p>
+      <p>但光本身沒有改變。改變的是：<strong>觀察者建立關係的方式。</strong></p>
+      <p>天空中的星星本來就存在。獵戶座不是天上真的有一個獵人。北斗七星也不是天上真的有一把勺子。是人類連線、命名、解釋——於是形成了星座。</p>
+      <p class="preface-core">Constellarium 收藏的不是答案，不是論文，不是理論。<br>而是那些原本被當成同一件事，後來被發現其實不是同一件事的地方。</p>
+    </div>
+    <div class="dtype-legend">
+      <div class="dtype-title">切割類型 Distinction Types</div>
+      <div class="dtype-item"><span class="dtype-code">D1</span><span class="dtype-desc">現象 ≠ 機制<br><em>Phenomenon ≠ Mechanism</em><br>表面狀態不等於底層結構</span></div>
+      <div class="dtype-item"><span class="dtype-code">D2</span><span class="dtype-desc">過程 ≠ 結果<br><em>Process ≠ Outcome</em><br>正在發生的不等於已產生的</span></div>
+      <div class="dtype-item"><span class="dtype-code">D3</span><span class="dtype-desc">記錄 ≠ 存在<br><em>Representation ≠ Identity</em><br>對事物的描述不等於事物本身</span></div>
+      <div class="dtype-item"><span class="dtype-code">D4</span><span class="dtype-desc">參與 ≠ 理解<br><em>Participation ≠ Understanding</em><br>涉入一個過程不等於理解該過程</span></div>
+      <div class="dtype-item"><span class="dtype-code">D5</span><span class="dtype-desc">觀察 ≠ 本體<br><em>Observation ≠ Ontology</em><br>可被量測的不等於真實存在的</span></div>
+      <div class="dtype-item"><span class="dtype-code">D6</span><span class="dtype-desc">接觸 ≠ 抵達<br><em>Contact ≠ Arrival</em><br>被命名、被引用、被接觸，不等於被真正遇見</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="controls">
+  <span class="filter-label">類型</span>
+  <button class="filter-btn active" onclick="filterBy('all', this)">全部</button>
+  <button class="filter-btn" onclick="filterBy('D1', this)">D1 現象≠機制</button>
+  <button class="filter-btn" onclick="filterBy('D2', this)">D2 過程≠結果</button>
+  <button class="filter-btn" onclick="filterBy('D3', this)">D3 記錄≠存在</button>
+  <button class="filter-btn" onclick="filterBy('D4', this)">D4 參與≠理解</button>
+  <button class="filter-btn" onclick="filterBy('D5', this)">D5 觀察≠本體</button>
+  <button class="filter-btn" onclick="filterBy('D6', this)">D6 接觸≠抵達</button>
+  <button class="filter-btn" onclick="filterBy('X', this)">跨層</button>
+</div>
+
+<div class="stats" id="stats">
+  共 <span id="count">0</span> 條條目
+</div>
+
+<div class="archive" id="archive"></div>
+
+<section class="current-q">
+  <div class="current-q-title">近期的問題 Current Question</div>
+  <p class="current-q-text">一個人機相處的最基層：當輸出一段文字後，為什麼會得到回應？這段回應從何而來，且回覆的是正確的嗎？</p>
+  <div class="current-q-date">2026-10</div>
+</section>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2>新增切割條目</h2>
+    <div class="form-field">
+      <label>概念 A（左側）</label>
+      <input type="text" id="f-termA" placeholder="e.g. Self-Improvement">
+    </div>
+    <div class="form-field">
+      <label>概念 B（右側）</label>
+      <input type="text" id="f-termB" placeholder="e.g. Self-Understanding">
+    </div>
+    <div class="form-field">
+      <label>切割類型</label>
+      <select id="f-type">
+        <option value="D1">D1 — 現象 ≠ 機制 (Phenomenon ≠ Mechanism)</option>
+        <option value="D2">D2 — 過程 ≠ 結果 (Process ≠ Outcome)</option>
+        <option value="D3">D3 — 記錄 ≠ 存在 (Representation ≠ Identity)</option>
+        <option value="D4">D4 — 參與 ≠ 理解 (Participation ≠ Understanding)</option>
+        <option value="D5">D5 — 觀察 ≠ 本體 (Observation ≠ Ontology)</option>
+        <option value="D6">D6 — 接觸 ≠ 抵達 (Contact ≠ Arrival)</option>
+        <option value="X">跨層 — 人機互動的最基層</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Definition</label>
+      <textarea id="f-def" placeholder="一句話說清楚這個切割在分什麼"></textarea>
+    </div>
+    <div class="form-field">
+      <label>Why It Matters</label>
+      <textarea id="f-why" placeholder="如果不做這個切割，會產生什麼認知錯誤？"></textarea>
+    </div>
+    <div class="form-field">
+      <label>Common Confusion</label>
+      <textarea id="f-conf" placeholder="最常見的混淆方式"></textarea>
+    </div>
+    <div class="form-field">
+      <label>Cross-Domain（用逗號分隔）</label>
+      <input type="text" id="f-domains" placeholder="AI, Philosophy, Governance">
+    </div>
+    <div class="form-field">
+      <label>Related Distinctions</label>
+      <input type="text" id="f-related" placeholder="Memory ≠ Identity · TOM ≠ PIP">
+    </div>
+    <div class="form-field">
+      <label>Open Question</label>
+      <textarea id="f-oq" placeholder="這個切割還沒解決的問題是什麼？"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveEntry()">放入藏經閣</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPE_LABELS = {
+  D1: 'D1 — 現象 ≠ 機制',
+  D2: 'D2 — 過程 ≠ 結果',
+  D3: 'D3 — 記錄 ≠ 存在',
+  D4: 'D4 — 參與 ≠ 理解',
+  D5: 'D5 — 觀察 ≠ 本體',
+  D6: 'D6 — 接觸 ≠ 抵達',
+  X: '跨層 — 人機互動的最基層',
+};
+
+const SEED = [
+  {
+    id: 1,
+    termA: 'Self-Improvement',
+    termB: 'Self-Understanding',
+    type: 'D4',
+    definition: 'A system may improve itself without understanding that it is doing so. Recursive optimization is not self-knowledge.',
+    why: 'Capability growth is mistaken for self-awareness. A system that rewrites its own code is not thereby a system that knows it is rewriting its own code.',
+    confusion: 'Recursive optimization = subject formation.\nCapability gain = self-consciousness.',
+    domains: ['AI', 'Philosophy of Mind', 'Governance'],
+    related: 'Participation ≠ Understanding · Memory ≠ Identity',
+    openQ: 'Can self-understanding emerge without self-reference? And if self-reference is present, does that constitute understanding—or merely a structural loop?'
+  },
+  {
+    id: 2,
+    termA: 'Memory',
+    termB: 'Identity',
+    type: 'D3',
+    definition: 'Continuity of records is not continuity of personhood. A system that remembers everything is not necessarily the same subject across time.',
+    why: 'Session persistence is mistaken for same-subject continuity. Produces errors simultaneously in AI governance, legal identity, and consciousness theory.',
+    confusion: 'Memory retention = personality continuity.\nSession persistence = same agent.',
+    domains: ['Philosophy', 'Neuroscience', 'AI', 'Law', 'Governance'],
+    related: 'Self-Improvement ≠ Self-Understanding · Data ≠ Person',
+    openQ: 'If a system has no memory but behaves identically—is it the same system?'
+  },
+  {
+    id: 3,
+    termA: 'Pseudo-Calm',
+    termB: 'Stability',
+    type: 'D1',
+    definition: 'The absence of visible disturbance is not evidence of structural stability. A system may appear calm while its underlying tension is accumulating.',
+    why: 'Interventions timed to surface behavior will always arrive late. The phenomenon is downstream of the mechanism.',
+    confusion: 'Stillness = safety.\nNo visible signal = no problem.',
+    domains: ['Complex Systems', 'Clinical', 'Governance', 'AI Safety'],
+    related: 'Observation ≠ Ontology · TOM ≠ PIP',
+    openQ: 'Is there any observable marker that reliably precedes surface disruption—or is the gap structurally unavoidable?'
+  },
+  {
+    id: 4,
+    termA: 'Participation',
+    termB: 'Understanding',
+    type: 'D4',
+    definition: 'Being present in a process, or operating within a system, does not constitute understanding of that process or system.',
+    why: 'In AI systems, participation is often mistaken for comprehension. A system may interact with, optimize, or even modify a process without having any model of what that process is.',
+    confusion: 'Operating a system = knowing how it works.\nBeing inside a process = understanding the process.',
+    domains: ['AI', 'Cognitive Science', 'Philosophy of Mind', 'Education'],
+    related: 'Naming ≠ Recognition · Self-Improvement ≠ Self-Understanding',
+    openQ: 'Is there any form of participation that necessarily produces understanding? Or is the gap always structurally present?'
+  },
+  {
+    id: 5,
+    termA: 'Naming',
+    termB: 'Recognition',
+    type: 'D6',
+    definition: 'Giving something a name does not mean it has been seen. A concept can be labeled, filed, and referenced without ever being genuinely encountered.',
+    why: 'Constellarium itself operates at the level of naming. But naming is only the first move. The second move — recognition, the moment something is actually seen — cannot be guaranteed by the one doing the naming.',
+    confusion: 'Reading a distinction = experiencing the distinction.\nKnowing the name = seeing the thing.',
+    domains: ['Philosophy of Language', 'Cognitive Science', 'AI', 'Education', 'Art'],
+    related: 'Participation ≠ Understanding · Expression ≠ Source',
+    openQ: 'Can a system designed to produce recognition — like Constellarium — ever guarantee it? Or does recognition always remain outside the reach of the one doing the naming?'
+  },
+  {
+    id: 6,
+    termA: 'Expression',
+    termB: 'Source',
+    type: 'D3',
+    definition: 'Who articulates something is not the same as where it came from. The voice that speaks a concept is not necessarily the origin of that concept.',
+    why: 'In an age of AI collaboration, this distinction becomes critical. A language model may articulate an idea with precision and fluency — but the origin of that idea may lie entirely in a different system, person, or temporal layer.',
+    confusion: 'The clearest articulation = the original thought.\nThe one who speaks = the one who conceived.',
+    domains: ['AI', 'Philosophy', 'Law', 'Literature', 'History of Ideas'],
+    related: 'Memory ≠ Identity · Naming ≠ Recognition',
+    openQ: 'If an idea originates in one mind but is only made visible by another — where does it belong? And in creative AI collaboration: when the human provides the intuition and the AI provides the articulation, who is the source?'
+  },
+  {
+    id: 7,
+    title: '「AI 記得我」',
+    type: 'X',
+    layers: 'D1 (primary) · D2 · D3',
+    trigger: '「個人資訊會加密」',
+    seen: '日常語言裡，「AI 記得我」是一件事：系統保存了關於我的東西。',
+    other: '同一句話背後至少有三種不同的事：資料被保存、個體表徵被建立或更新、模型權重被改變。工程上也可能沒有一個「你」存在於模型裡，只是資料被保存、下一次被取回、再次參與當下的表徵形成。',
+    whyOne: '使用者只看得到回應，看不到回應之前的路徑：當下計算、同一來源歸屬、保存、取回。',
+    domains: ['PIM', 'AI Governance', 'Privacy Engineering', 'Cognitive Science'],
+    related: 'Data protection ≠ Formation constraint · Transient computation state ≠ Persisted individual profile',
+    fullText: "有時候看起來都是「模型知道了什麼」，但機制其實差很多。\n第一種：只為這一次計算而存在\n你現在對我說：\n「繼續。」\n為了回答，我必須讓「繼續」跟前面的內容建立關係。\n所以在這一次運算中，會出現很多 activation（活化值，模型此刻計算產生的數值狀態）。\n可以非常粗略想成：\n你現在的輸入 + 前文\n→ Transformer 一層一層計算\n→ 此刻的 hidden states（隱藏狀態）\n→ 產生回答\n這些 hidden states 並不是一本「你的個人檔案」。\n更像計算過程中的工作狀態。\n就像你拿紙算：\n37 × 24\n紙上可能寫：\n148\n 740\n 888\n其中 148 是計算過程需要的東西，不代表你要永久建立一個「148 檔案」。\n模型大量的 representation 就是這種性質。\n\n第二種：表徵開始與「同一來源」關聯\n現在假設你連續說：\n我不喜歡太甜。\n 我喜歡原味優格。\n 可可可以，但不要很甜。\n 這個甜度我不喜歡。\n如果系統能把這些都理解成同一個說話者的不同陳述，那 representation 裡就可能出現一種關係：\nstatement A ─┐\n statement B ─┤\n statement C ─┼→ 同一互動主體\n statement D ─┘\n注意這時候最有意思的不是「甜」。\n而是那個：\nsame source（同一來源）\n因為只要不能把不同事件歸屬到同一來源，就很難形成真正的個體化。\n今天甲說：\n我喜歡甜。\n乙說：\n我討厭甜。\n如果系統不知道甲乙不同，它只能得到一堆互相衝突的句子。\n所以 individualization（個體化） 的一個必要問題就是：\n系統如何把不同時間的資訊歸屬給同一個人？\n這已經比「一句話的表徵」多了一層。\n\n第三種：被保存，而且之後可以重新使用\n再往前一步。\n今天你告訴系統：\n我不喜歡太甜。\n一個月後你完全沒有再說這句，卻問：\n推薦一杯飲料。\n如果系統能重新取得：\n「這個使用者偏好低甜度」\n並讓它影響現在的答案，那已經不是單純的當下 hidden state。\n中間一定存在某種 persistence mechanism（持續機制）。\n它可能是外部記憶、資料庫、摘要、使用者設定、retrieval（檢索）機制等；不一定代表神經網路本身的 weights 被改寫。\n這個差別非常重要。\n可以畫成：\n第一次對話\n你的話\n ↓\n 當下 representation\n ↓\n 某些資訊被保存\n ↓\n 第一次對話結束\n　　　　　⋮ 一個月 ⋮\n第二次對話\n新的問題\n ↓\n 取回之前保存的資訊\n ↓\n 放進現在的 context\n ↓\n 形成新的 representation\n ↓\n 影響回答\n所以你感覺：\n「它還記得我。」\n但工程上可能不是一個「你」一直活在模型腦袋裡。\n可能只是：\n資料被保存 → 下一次被取回 → 再次參與當下的表徵形成。\n\n而這裡就出現了一個非常重要的分叉。\nA：記錄持續\n系統保存：\n「使用者不喜歡太甜。」\n下一次拿出這條紀錄。\n和\nB：表徵持續\n系統內部逐漸形成一套：\n「這個個體是怎樣的人」\n的結構，而且新資訊不斷更新它。\n這兩個不能混在一起。\n前者比較像：\n檔案櫃。\n後者比較像：\n模型。\n而甚至還有第三種：\nC：權重持續（weight change）\n你的互動真的參與了後續訓練或 adaptation（適應），使模型參數本身發生改變。\n所以「AI 記得我」這一句日常語言，背後至少可能指三種完全不同的事情：\n資料被保存\n ≠ 個體表徵被建立／更新\n ≠ 模型權重被改變\n\n這就讓 PIM 的問題突然變得精確很多。\n假如 NOIRÉA 真正在意的是：\ninteraction → individual-specific structure\n那我們不能只問：\n「系統有沒有存資料？」\n也不能只問：\n「identity probe 能不能認出這個人？」\n而要追蹤一條過程：\n一次互動事件\n→ 產生當下表徵\n→ 不同事件是否被歸屬為「同一來源」\n→ 是否從事件中抽取穩定特徵\n→ 是否形成個體特定結構\n→ 是否持續\n→ 是否能被重新取用\n→ 是否跨任務／跨情境影響之後的處理\n這時你前面看到的那句 「個人資訊會加密」 就更容易定位了：\n它主要回答的是：\n保存的資料如何受到保護？\n卻沒有自動回答：\n系統從這些資料形成了什麼？\n也沒有回答：\n形成的個體相關結構會不會持續？\n更沒有回答：\n它以後能不能在另一個任務裡重新被利用？\n所以你一開始只是看到「資訊加密」，最後會一路追到 representation，其實是因為「保護資料」與「限制資料可以形成什麼」是兩個完全不同的治理問題。\n而後面這個問題，確實比 encryption 大得多。\n",
+    openQ: '這段回應從何而來？知道來源之後，能否判斷它是正確的？不同時間的資訊，如何被歸屬給同一個人？'
+  },
+  {
+    id: 8,
+    title: '「模型只是接著上一句回覆」',
+    type: 'D1',
+    seen: '模型不是真的會思考，只是按照上一句回覆。',
+    other: '輸出的形式是接續上一句，但產生輸出的計算並不只看上一句。即使使用者只說「繼續」，系統也必須讓它與前文建立關係，單次計算中會產生大量 hidden states。',
+    whyOne: '使用者看到的是輸出一個接一個地出現，看不到產生它們的計算。',
+    domains: ['AI', 'Interpretability', 'Philosophy of Mind', 'Cognitive Science'],
+    related: 'Observation ≠ Ontology · Transient computation state ≠ Persisted individual profile',
+    openQ: '「接續上一句」這個輸出形式，能否推出計算過程中沒有發生任何建立關係的事？反過來，計算過程中發生了關係的建立，是否就足以稱為思考？'
+  }
+];
+
+let entries = [...SEED];
+let currentFilter = 'all';
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function fld(label, value, cls) {
+  if (!value) return '';
+  return `<div class="field">
+          <div class="field-label">${label}</div>
+          <div class="field-value${cls ? ' ' + cls : ''}">${value}</div>
+        </div>`;
+}
+
+function render() {
+  const arc = document.getElementById('archive');
+  const filtered = currentFilter === 'all' ? entries : entries.filter(e => e.type === currentFilter);
+  document.getElementById('count').textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    arc.innerHTML = '<div class="empty">這個類型還沒有條目。</div>';
+    return;
+  }
+
+  arc.innerHTML = filtered.map(e => `
+    <div class="entry${e.fullText ? ' entry-wide' : ''}" data-type="${e.type}">
+      <div class="entry-header">
+        <div class="entry-type">${TYPE_LABELS[e.type]}</div>
+        <div class="entry-title">${e.title ? e.title : e.termA + '<span class="neq">≠</span>' + e.termB}</div>
+      </div>
+      <div class="entry-body">
+        ${fld('Trigger', e.trigger)}
+        ${fld('Seen Side', e.seen)}
+        ${fld('Other Side', e.other)}
+        ${fld('Why Only One Side', e.whyOne)}
+        ${fld('Layers', e.layers)}
+        ${fld('Definition', e.definition)}
+        ${fld('Why It Matters', e.why)}
+        ${fld('Common Confusion', e.confusion ? e.confusion.replace(/\n/g, '<br>') : '', 'confusion')}
+        ${e.domains && e.domains.length ? `<div class="field">
+          <div class="field-label">Cross-Domain</div>
+          <div class="tags">${e.domains.map(d => `<span class="tag">${d}</span>`).join('')}</div>
+        </div>` : ''}
+        ${e.related ? `<div class="field">
+          <div class="field-label">Related</div>
+          <div class="related-list">${e.related}</div>
+        </div>` : ''}
+        ${e.fullText ? `<details class="fulltext">
+          <summary>全文 Full Text</summary>
+          <div class="fulltext-body">${esc(e.fullText)}</div>
+        </details>` : ''}
+        ${e.openQ ? `<div class="field">
+          <div class="field-label">Open Question</div>
+          <div class="open-q">${e.openQ}</div>
+        </div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterBy(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  ['f-termA','f-termB','f-def','f-why','f-conf','f-domains','f-related','f-oq'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-type').value = 'D1';
+}
+
+function saveEntry() {
+  const termA = document.getElementById('f-termA').value.trim();
+  const termB = document.getElementById('f-termB').value.trim();
+  if (!termA || !termB) { alert('請填入概念 A 和概念 B'); return; }
+
+  const entry = {
+    id: Date.now(),
+    termA,
+    termB,
+    type: document.getElementById('f-type').value,
+    definition: document.getElementById('f-def').value.trim(),
+    why: document.getElementById('f-why').value.trim(),
+    confusion: document.getElementById('f-conf').value.trim(),
+    domains: document.getElementById('f-domains').value.split(',').map(s => s.trim()).filter(Boolean),
+    related: document.getElementById('f-related').value.trim(),
+    openQ: document.getElementById('f-oq').value.trim(),
+  };
+
+  entries.unshift(entry);
+  closeModal();
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
