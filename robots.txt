@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /archive/
+Sitemap: https://lin-hui-pi.github.io/dynamical-structuralism/sitemap.xml
