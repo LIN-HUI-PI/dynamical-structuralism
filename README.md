@@ -42,10 +42,8 @@ The flagship integration is the **LIN System** — a Human–AI–Physical Sover
 | File | Description |
 |------|-------------|
 | `README.md` | This file |
-| `LIN-System-Complete-Reference.md` | Full architecture reference with definitions and equations |
 | `research-map.html` | Visual architecture map (open in browser) |
 | `research-tree.txt` | GitHub-style architecture tree |
-| `equation-registry.md` | Complete equation registry with concept mapping |
 
 ---
 
