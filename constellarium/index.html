@@ -564,7 +564,7 @@
   <button class="filter-btn" onclick="filterBy('X', this)">跨層</button>
 </div>
 
-<div class="stats" id="stats">
+<div class="controls"><button class="filter-btn" onclick="openModal()">＋ 新增條目</button><button class="filter-btn" onclick="exportEntries()">匯出 JSON</button><button class="filter-btn" onclick="document.getElementById('import-json').click()">匯入 JSON</button><input type="file" id="import-json" accept=".json,application/json" hidden onchange="importEntries(event)"></div><div class="stats" id="stats">
   共 <span id="count">0</span> 條條目
 </div>
 
@@ -741,18 +741,25 @@ const SEED = [
   }
 ];
 
-let entries = [...SEED];
+const STORAGE_KEY = 'constellarium-v02-entries';
+const validEntry = e => e && typeof e === 'object' && !Array.isArray(e) && ['D1','D2','D3','D4','D5','D6','X'].includes(e.type) && (typeof e.title === 'string' || (typeof e.termA === 'string' && typeof e.termB === 'string'));
+function loadEntries() { try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return [...SEED]; const a = JSON.parse(raw); if (!Array.isArray(a) || !a.every(validEntry)) throw Error('Invalid archive'); return a; } catch(e) { console.warn(e); return [...SEED]; } }
+let entries = loadEntries();
+function persistEntries() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(entries)); return true; } catch(e) { alert('本機儲存失敗，請先匯出 JSON 備份'); return false; } }
+function exportEntries() { const blob = new Blob([JSON.stringify({format:'constellarium-v0.2',exportedAt:new Date().toISOString(),entries},null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='constellarium-backup.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); }
+async function importEntries(event) { const file=event.target.files?.[0]; event.target.value=''; if(!file)return; if(file.size>2097152){alert('備份超過 2 MB');return;} try { const data=JSON.parse(await file.text()); const incoming=Array.isArray(data)?data:data.entries; if(!Array.isArray(incoming)||!incoming.every(validEntry))throw Error('invalid'); if(!confirm('匯入會取代此瀏覽器的條目。請先匯出備份。確定？'))return; const old=entries; entries=incoming; if(!persistEntries()){entries=old;return;} render(); } catch(e) {alert('無法匯入：格式不正確');} }
+
 let currentFilter = 'all';
 
 function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function fld(label, value, cls) {
   if (!value) return '';
   return `<div class="field">
           <div class="field-label">${label}</div>
-          <div class="field-value${cls ? ' ' + cls : ''}">${value}</div>
+          <div class="field-value${cls ? ' ' + cls : ''}">${esc(value)}</div>
         </div>`;
 }
 
@@ -767,10 +774,10 @@ function render() {
   }
 
   arc.innerHTML = filtered.map(e => `
-    <div class="entry${e.fullText ? ' entry-wide' : ''}" data-type="${e.type}">
+    <div class="entry${e.fullText ? ' entry-wide' : ''}" data-type="${esc(e.type)}">
       <div class="entry-header">
-        <div class="entry-type">${TYPE_LABELS[e.type]}</div>
-        <div class="entry-title">${e.title ? e.title : e.termA + '<span class="neq">≠</span>' + e.termB}</div>
+        <div class="entry-type">${esc(TYPE_LABELS[e.type] || '')}</div>
+        <div class="entry-title">${e.title ? esc(e.title) : esc(e.termA) + '<span class="neq">≠</span>' + esc(e.termB)}</div>
       </div>
       <div class="entry-body">
         ${fld('Trigger', e.trigger)}
@@ -783,11 +790,11 @@ function render() {
         ${fld('Common Confusion', e.confusion ? e.confusion.replace(/\n/g, '<br>') : '', 'confusion')}
         ${e.domains && e.domains.length ? `<div class="field">
           <div class="field-label">Cross-Domain</div>
-          <div class="tags">${e.domains.map(d => `<span class="tag">${d}</span>`).join('')}</div>
+          <div class="tags">${e.domains.map(d => `<span class="tag">${esc(d)}</span>`).join('')}</div>
         </div>` : ''}
         ${e.related ? `<div class="field">
           <div class="field-label">Related</div>
-          <div class="related-list">${e.related}</div>
+          <div class="related-list">${esc(e.related)}</div>
         </div>` : ''}
         ${e.fullText ? `<details class="fulltext">
           <summary>全文 Full Text</summary>
@@ -795,7 +802,7 @@ function render() {
         </details>` : ''}
         ${e.openQ ? `<div class="field">
           <div class="field-label">Open Question</div>
-          <div class="open-q">${e.openQ}</div>
+          <div class="open-q">${esc(e.openQ)}</div>
         </div>` : ''}
       </div>
     </div>
@@ -840,6 +847,7 @@ function saveEntry() {
   };
 
   entries.unshift(entry);
+  if (!persistEntries()) { entries.shift(); return; }
   closeModal();
   render();
 }
