@@ -1,0 +1,33 @@
+name: LIN Human-Control Boundary reproducibility
+
+on:
+  push:
+    paths:
+      - 'research/lin-human-control-boundary/**'
+      - '.github/workflows/lin-human-control-boundary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-v01:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run v0.1 baseline tests
+        working-directory: research/lin-human-control-boundary/v0.1
+        run: python -m unittest -v test_boundary.py
+  test-v02:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run v0.2 fault-injection tests
+        working-directory: research/lin-human-control-boundary/v0.2
+        run: python -m unittest -v test_v02.py
