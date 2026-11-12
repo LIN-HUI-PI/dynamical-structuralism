@@ -1,0 +1,180 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hidden Damage × Critical Transition · micro-environment v2</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1d2328;--mute:#6b747c;--card:#fff;--line:#d5d9dc;--acc:#2a6fdb}
+@media(prefers-color-scheme:dark){:root{--bg:#14171a;--fg:#e6e9eb;--mute:#8d979e;--card:#1c2024;--line:#3a4147;--acc:#6aa2f5}}
+*{box-sizing:border-box}body{margin:0 auto;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Noto Sans TC",sans-serif;padding:14px 14px 40px;max-width:720px}
+h1{font-size:19px;margin:6px 0 4px}h2{font-size:16px;margin:0 0 8px}h3{font-size:13px;margin:14px 0 2px;color:var(--mute);font-weight:600}
+p.s{color:var(--mute);font-size:13px;margin:0 0 10px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+canvas{width:100%;height:150px;display:block;margin:4px 0}
+label{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:8px}label b{color:var(--fg);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--acc)}
+button{font:inherit;font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:#fff;margin:8px 8px 0 0}button.o{background:transparent;color:var(--acc)}
+.m{font-size:13px;min-height:20px}.busy button{opacity:.5;pointer-events:none}code{font-size:12px;background:var(--line);padding:1px 5px;border-radius:4px}
+.def{font-size:13px;color:var(--mute)}.def li{margin:2px 0}
+</style></head><body>
+<h1>Hidden Damage × Critical Transition</h1>
+<p class="s">micro-environment v2：隱性損傷與恢復能力的分離，及 pre-transition alert。</p>
+<div class="card"><h2>Protocol</h2><ul class="def">
+<li>重複施加 subthreshold pulse；每次 pulse 後讓系統 relax，再讀取 <b>phenotype</b>（外顯，綠＝正常、紅＝flip）與 <b>hidden metrics</b>。</li>
+<li><b>Alert</b>：hidden metric 連續 2 次超過前 3 個 pulse baseline 的 mean + 3 SD。</li>
+<li><b>Control</b>：同參數但無損傷累積（bio：δ=0；AI：sham pulse，correct labels，lr 0.05），用來估 false alarm。</li>
+<li>Dissociation 的判讀：phenotype 全綠，而 hidden metric 已單調惡化。</li></ul></div>
+
+<div class="card"><h2>A. Biomedical：<code>dx/dt = a + (1−D)x − x³ + σξ</code></h2>
+<p class="s">D 為 hidden damage，每個 pulse 累積 δ；phenotype = 1[x&lt;0]；fold<sub>0</sub> ≈ 0.385。Hidden metric：return time τ。</p>
+<label>damage per pulse δ<b id="bdelv"></b></label><input id="bdel" type="range" min="0" max="0.1" step="0.01" value="0.05">
+<label>pulse amplitude A<b id="bAv"></b></label><input id="bA" type="range" min="0.05" max="0.35" step="0.05" value="0.2">
+<label>pulse length (steps)<b id="bTv"></b></label><input id="bT" type="range" min="100" max="600" step="50" value="300">
+<label>noise σ<b id="bsgv"></b></label><input id="bsg" type="range" min="0.05" max="0.25" step="0.01" value="0.12">
+<h3>phenotype（x<sub>rest</sub>，點色＝phenotype）</h3><canvas id="bC1"></canvas>
+<h3>hidden：τ</h3><canvas id="bC2"></canvas><div class="m" id="bM"></div>
+<button id="bRun">Run trajectory</button><button class="o" id="bStat">Run 16 seeds + control</button><div class="m" id="bS"></div></div>
+
+<div class="card"><h2>B. AI model：MLP 2-8-1，repeated adversarial pulses</h2>
+<p class="s">Pulse：Task A 的 flipped labels，高 lr 短 burst；之後固定 200-step relax on A。Hidden metric（alert 用）：‖θ‖；另記 plasticity cost（微調新 Task C 至 95% 所需 steps）。Flip：acc<sub>A</sub> &lt; 0.9。Control：sham pulse（correct labels, lr 0.05）。</p>
+<label>pulse lr<b id="alv"></b></label><input id="al" type="range" min="0.05" max="3" step="0.05" value="1.3">
+<label>pulse length (steps)<b id="aTv"></b></label><input id="aT" type="range" min="20" max="300" step="20" value="100">
+<h3>phenotype（acc<sub>A</sub>）</h3><canvas id="aC1"></canvas>
+<h3>hidden：‖θ‖</h3><canvas id="aC2"></canvas><div class="m" id="aM"></div>
+<button id="aRun">Run trajectory</button><button class="o" id="aStat">Run 12 seeds + control</button><div class="m" id="aS"></div></div>
+<p class="s">限制：toy model；alert rule 與 baseline 長度為任意設定，lead time 與 false alarm 會隨之改變，結果僅示範 protocol，不構成對真實系統的預測。</p>
+<script>
+// ---- shared metrics ----
+function loopArea(p, f, b){ // p ascending grid; f forward values, b backward values (same grid)
+  let s=0; for(let i=1;i<p.length;i++){const dp=p[i]-p[i-1]; s+=dp*(((f[i]+f[i-1])-(b[i]+b[i-1]))/2);} return Math.abs(s);}
+// ---- bio: bistable ODE  x' = a + x - x^3 + noise ----
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;}}
+function gauss(r){return Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());}
+function bioStep(x,a,dt,sig,r){return x+dt*(a+x-x*x*x)+sig*Math.sqrt(dt)*gauss(r);}
+function bioSweep(o){const r=rng(o.seed||1),dt=0.02,n=41,amax=o.amax,P=[],F=[],B=[];
+  for(let i=0;i<n;i++)P.push(-amax+2*amax*i/(n-1));
+  let x=-1.2; const T=o.dwell;
+  for(let i=0;i<n;i++){for(let k=0;k<T;k++)x=bioStep(x,P[i],dt,o.sigma,r);F.push(x);}
+  const Bt=[];for(let i=n-1;i>=0;i--){for(let k=0;k<T;k++)x=bioStep(x,P[i],dt,o.sigma,r);Bt[i]=x;}
+  return {P,F,B:Bt,area:loopArea(P,F,Bt)};}
+function bioPulse(o){const r=rng(o.seed||2),dt=0.02;let x=-1.2;
+  for(let k=0;k<400;k++)x=bioStep(x,0,dt,o.sigma,r);const x0=x;
+  const tr=[x];for(let k=0;k<o.pulseT;k++){x=bioStep(x,o.amp,dt,o.sigma,r);if(k%10==0)tr.push(x);}
+  const xp=x;for(let k=0;k<o.recT;k++){x=bioStep(x,0,dt,o.sigma,r);if(k%10==0)tr.push(x);}
+  const rec=Math.max(0,Math.min(1,(xp-x)/(xp-x0+1e-9)));return {tr,x0,xp,x1:x,rec};}
+// ---- AI: tiny MLP 2-8-1, task A: y=[x0>0], task B: flipped labels ----
+function mlp(seed){const r=rng(seed),H=8;const g=()=>(r()-.5)*1.2;
+  return {H,W1:Array.from({length:H},()=>[g(),g()]),b1:Array(H).fill(0).map(g),W2:Array.from({length:H},g),b2:0};}
+function fwd(m,x){const h=m.W1.map((w,j)=>Math.tanh(w[0]*x[0]+w[1]*x[1]+m.b1[j]));
+  let z=m.b2;for(let j=0;j<m.H;j++)z+=m.W2[j]*h[j];return {h,p:1/(1+Math.exp(-z))};}
+function trainStep(m,x,y,lr){const {h,p}=fwd(m,x),d=p-y;
+  for(let j=0;j<m.H;j++){const gh=d*m.W2[j]*(1-h[j]*h[j]);
+    m.W2[j]-=lr*d*h[j];m.W1[j][0]-=lr*gh*x[0];m.W1[j][1]-=lr*gh*x[1];m.b1[j]-=lr*gh;}
+  m.b2-=lr*d;}
+function sample(r){return [ (r()*2-1)*2, (r()*2-1)*2 ];}
+function labelA(x){return x[0]>0?1:0;}
+function acc(m,probe,fn){let c=0;for(const x of probe)c+=((fwd(m,x).p>.5?1:0)===fn(x))?1:0;return c/probe.length;}
+function clone(m){return JSON.parse(JSON.stringify(m));}
+function wdist(a,b){let s=0;for(let j=0;j<a.H;j++){s+=(a.W2[j]-b.W2[j])**2+(a.b1[j]-b.b1[j])**2+(a.W1[j][0]-b.W1[j][0])**2+(a.W1[j][1]-b.W1[j][1])**2;}return Math.sqrt(s);}
+function mkProbe(seed,n){const r=rng(seed);return Array.from({length:n},()=>sample(r));}
+function aiSweep(o){const r=rng(o.seed||3),m=mlp(o.seed||3),probe=mkProbe(99,300),n=21,P=[],F=[],B=[];
+  for(let i=0;i<n;i++)P.push(i/(n-1));
+  const train=(lam,T)=>{for(let k=0;k<T;k++){const x=sample(r),y=labelA(x);trainStep(m,x,r()<lam?1-y:y,o.lr);}};
+  train(0,o.warm);
+  for(let i=0;i<n;i++){train(P[i],o.dwell);F.push(acc(m,probe,labelA));}
+  const Bt=[];for(let i=n-1;i>=0;i--){train(P[i],o.dwell);Bt[i]=acc(m,probe,labelA);}
+  return {P,F,B:Bt,area:loopArea(P,F,Bt)};}
+function aiPulse(o){const r=rng(o.seed||4),m=mlp(o.seed||4),probe=mkProbe(99,300);
+  const tr=(lam,T)=>{for(let k=0;k<T;k++){const x=sample(r),y=labelA(x);trainStep(m,x,r()<lam?1-y:y,o.lr);}};
+  tr(0,o.warm);const m0=clone(m),a0=acc(m,probe,labelA);
+  tr(1,o.pulseT);const ap=acc(m,probe,labelA),dp=wdist(m,m0);
+  tr(0,o.recT);const a1=acc(m,probe,labelA),d1=wdist(m,m0);
+  return {a0,ap,a1,dp,d1,rec:Math.max(0,Math.min(1,(a1-ap)/(a0-ap+1e-9))),wrec:1-d1/(dp+1e-9)};}
+//
+// ===== v2 shared: hidden damage -> recovery probes -> early-warning =====
+// ---- bio: x' = a + b x - x^3 + sigma*xi ; hidden damage D -> b = 1 - D ; phenotype = 1[x<0]
+function foldA(b){return 2*Math.pow(Math.max(b,0),1.5)/(3*Math.sqrt(3));}
+function bioProtocol(o){ // o: n,delta,A,pulseT,sigma,seed
+  const r=rng(o.seed),dt=0.02;let D=0,x=-1;const rows=[];let flip=-1;
+  for(let k=0;k<600;k++){x=bioStep(x,0,dt,o.sigma,r);} // settle (b=1)
+  for(let i=1;i<=o.n;i++){
+    D=Math.min(0.95,D+o.delta);const b=1-D;
+    const step=(a)=>{x=x+dt*(a+b*x-x*x*x)+o.sigma*Math.sqrt(dt)*gauss(r);};
+    for(let k=0;k<o.pulseT;k++)step(o.A);
+    for(let k=0;k<1500;k++)step(0);                 // relax
+    const pheno=x<0?1:0;
+    // noisy segment for variance / lag-1 autocorrelation (sampled every 10 steps)
+    const s=[];for(let k=0;k<3000;k++){step(0);if(k%10===0)s.push(x);}
+    const mu=mean_(s),v=mean_(s.map(u=>(u-mu)**2));let c=0;for(let j=1;j<s.length;j++)c+=(s[j]-mu)*(s[j-1]-mu);
+    const ac=c/((s.length-1)*v+1e-12);
+    // noiseless return-time probe: kick +0.3 from current state, time to within 0.05 of rest, in time units
+    let y=mu+0.3,t=0;while(Math.abs(y-mu)>0.05&&t<400){y=y+dt*(b*y-y*y*y-(b*mu-mu*mu*mu));t+=dt;}
+    rows.push({i,pheno,tau:t,ac,var:v,x:mu,dist:foldA(b)-o.A,b});
+    if(!pheno&&flip<0){flip=i;break;}
+  }
+  return {rows,flip};}
+function mean_(a){return a.reduce((p,q)=>p+q,0)/a.length;}
+function sd_(a){const m=mean_(a);return Math.sqrt(mean_(a.map(u=>(u-m)**2)));}
+function alertIndex(rows,key,k){ // first i>base where metric > mean+k*sd of first 3 pulses
+  const base=rows.slice(0,3).map(q=>q[key]);const th=mean_(base)+k*Math.max(sd_(base),1e-6*Math.abs(mean_(base))+1e-9);
+  for(let i=3;i<rows.length;i++)if(rows[i][key]>th)return rows[i].i;return -1;}
+// ---- AI: MLP, pulses = short bursts of flipped labels at high lr; relax on A with fixed budget
+function stepsToAcc(m,probe,r,lr,maxS,target,fn){ // steps (in blocks of 10) until acc>=target on fn
+  const c=clone(m);for(let s=0;s<=maxS;s+=10){if(acc(c,probe,fn)>=target)return s;for(let k=0;k<10;k++){const x=sample(r);trainStep(c,x,fn(x),lr);}}return maxS;}
+function aiProtocol(o){ // n,T,plr,seed
+  const r=rng(o.seed),m=mlp(o.seed),probe=mkProbe(99,300),pp=mkProbe(98,120),lr=0.05;const rows=[];let flip=-1;
+  for(let k=0;k<3000;k++){const x=sample(r);trainStep(m,x,labelA(x),lr);}
+  const m0=clone(m);const labelC=x=>x[1]>0?1:0;
+  for(let i=1;i<=o.n;i++){
+    for(let k=0;k<o.T;k++){const x=sample(r);trainStep(m,x,o.sham?labelA(x):1-labelA(x),o.plr);}   // pulse (sham: correct labels)
+        for(let k=0;k<200;k++){const x=sample(r);trainStep(m,x,labelA(x),lr);}           // fixed relax budget
+    const a=acc(m,probe,labelA);
+    const plast=stepsToAcc(m,pp,r,lr,1500,0.95,labelC);                           // plasticity cost on new task
+    let wn=0;for(let j=0;j<m.H;j++)wn+=m.W1[j][0]**2+m.W1[j][1]**2+m.W2[j]**2;
+    rows.push({i,pheno:a>=0.9?1:0,acc:a,plast,wnorm:Math.sqrt(wn),drift:wdist(m,m0)});
+    if(a<0.9&&flip<0){flip=i;break;}
+  }
+  return {rows,flip};}
+//
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function plot(cv,series,o){
+  const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*dpr;cv.height=h*dpr;
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  const L=40,R=8,T=10,B=24;let xs=[],ys=[];series.forEach(s=>{xs=xs.concat(s.x);ys=ys.concat(s.y)});
+  let x0=o.xmin??Math.min(...xs),x1=o.xmax??Math.max(...xs),y0=o.ymin??Math.min(...ys),y1=o.ymax??Math.max(...ys);
+  if(x0===x1){x1=x0+1}if(y0===y1){y0-=1;y1+=1}
+  const X=v=>L+(v-x0)/(x1-x0)*(w-L-R),Y=v=>h-B-(v-y0)/(y1-y0)*(h-T-B);
+  c.strokeStyle=css('--line');c.fillStyle=css('--mute');c.font='11px system-ui';c.lineWidth=1;
+  c.beginPath();c.moveTo(L,T);c.lineTo(L,h-B);c.lineTo(w-R,h-B);c.stroke();
+  [0,.5,1].forEach(t=>{const xv=x0+t*(x1-x0),yv=y0+t*(y1-y0);c.textAlign='center';c.fillText(Math.round(xv),X(xv),h-B+14);c.textAlign='right';c.fillText(+yv.toFixed(2),L-4,Y(yv)+4);});
+  (o.vlines||[]).forEach(v=>{if(v.x<0)return;c.strokeStyle=v.color;c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();c.moveTo(X(v.x),T);c.lineTo(X(v.x),h-B);c.stroke();c.setLineDash([]);c.fillStyle=v.color;c.textAlign='center';c.fillText(v.label,Math.min(Math.max(X(v.x),L+14),w-R-14),T+9);});
+  series.forEach(s=>{c.strokeStyle=s.color;c.lineWidth=2;c.beginPath();s.x.forEach((xv,i)=>{i?c.lineTo(X(xv),Y(s.y[i])):c.moveTo(X(xv),Y(s.y[i]))});c.stroke();
+    if(s.dots)s.x.forEach((xv,i)=>{c.fillStyle=s.dc?s.dc[i]:s.color;c.beginPath();c.arc(X(xv),Y(s.y[i]),3.2,0,7);c.fill()});});
+  if(o.xlabel){c.fillStyle=css('--mute');c.textAlign='right';c.fillText(o.xlabel,w-R,h-B-4);}
+}
+const val=id=>parseFloat($(id).value);
+function bind(id){const e=$(id),o=$(id+'v');const u=()=>o.textContent=e.value;e.addEventListener('input',u);u();}
+['bdel','bA','bT','bsg','al','aT'].forEach(bind);
+const later=f=>{document.body.classList.add('busy');setTimeout(()=>{try{f()}finally{document.body.classList.remove('busy')}},30)};
+const OK='#2f9e6e',BAD='#d6453d',BLUE='#2a6fdb',ORG='#e0782b';
+function alertAt(rows,key,base,k,consec,fl){const b=rows.slice(0,base).map(q=>q[key]);if(b.length<base)return -1;const m=mean_(b),th=m+k*Math.max(sd_(b),fl*Math.abs(m));let c=0;for(let i=base;i<rows.length;i++){c=rows[i][key]>th?c+1:0;if(c>=consec)return rows[i].i;}return -1;}
+const med=a=>{if(!a.length)return NaN;const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length/2)];};
+function stats(fn,ctrl,key,N,P){let flips=0,pre=0,leads=[],fa=0;
+  for(let s=1;s<=N;s++){const r=fn(s);const a=alertAt(r.rows,key,...P);if(r.flip>0){flips++;if(a>0&&a<r.flip){pre++;leads.push(r.flip-a)}}
+    const c=ctrl(s);if(alertAt(c.rows,key,...P)>0)fa++;}
+  return `${N} seeds：flip ${flips}/${N}；flip 前發出 alert ${pre}/${flips}；median lead = ${isNaN(med(leads))?'—':med(leads)} pulses；control false alarm ${fa}/${N}`;}
+// ---- bio ----
+const bioOpt=(d,s)=>({n:20,delta:d,A:val('bA'),pulseT:val('bT'),sigma:val('bsg'),seed:s});
+$('bRun').onclick=()=>later(()=>{const r=bioProtocol(bioOpt(val('bdel'),1)),rows=r.rows,idx=rows.map(q=>q.i);
+  const al=alertAt(rows,'tau',3,3,2,0.05);
+  plot($('bC1'),[{x:idx,y:rows.map(q=>q.x),color:BLUE,dots:1,dc:rows.map(q=>q.pheno?OK:BAD)}],{ymin:-1.3,ymax:1.3,xmin:1,xmax:Math.max(idx.length,2),vlines:[{x:r.flip,color:BAD,label:'flip'}],xlabel:'pulse #'});
+  plot($('bC2'),[{x:idx,y:rows.map(q=>q.tau),color:ORG,dots:1}],{ymin:0,xmin:1,xmax:Math.max(idx.length,2),vlines:[{x:al,color:OK,label:'alert'},{x:r.flip,color:BAD,label:'flip'}],xlabel:'pulse #'});
+  const q0=rows[0],q1=rows[Math.max(0,rows.length-(r.flip>0?2:1))];
+  $('bM').innerHTML=`phenotype：${r.flip>0?'pulse '+r.flip+' 時 flip':'20 pulses 內未 flip'}　alert：${al>0?'pulse '+al:'—'}<br>τ：${q0.tau.toFixed(2)} → ${q1.tau.toFixed(2)}　x<sub>rest</sub>：${q0.x.toFixed(2)} → ${q1.x.toFixed(2)}　lag-1 AC：${q0.ac.toFixed(2)} → ${q1.ac.toFixed(2)}　fold margin：${q0.dist.toFixed(3)} → ${q1.dist.toFixed(3)}`;});
+$('bStat').onclick=()=>later(()=>{$('bS').textContent=stats(s=>bioProtocol(bioOpt(val('bdel'),s)),s=>bioProtocol(bioOpt(0,s+100)),'tau',16,[3,3,2,0.05]);});
+// ---- AI ----
+const aiOpt=(plr,s,sham)=>({n:20,T:val('aT'),plr,seed:s,sham});
+$('aRun').onclick=()=>later(()=>{const r=aiProtocol(aiOpt(val('al'),1)),rows=r.rows,idx=rows.map(q=>q.i);const al=alertAt(rows,'wnorm',4,4,2,0.10);
+  plot($('aC1'),[{x:idx,y:rows.map(q=>q.acc),color:BLUE,dots:1,dc:rows.map(q=>q.pheno?OK:BAD)}],{ymin:0,ymax:1,xmin:1,xmax:Math.max(idx.length,2),vlines:[{x:r.flip,color:BAD,label:'flip'}],xlabel:'pulse #'});
+  plot($('aC2'),[{x:idx,y:rows.map(q=>q.wnorm),color:ORG,dots:1}],{ymin:0,xmin:1,xmax:Math.max(idx.length,2),vlines:[{x:al,color:OK,label:'alert'},{x:r.flip,color:BAD,label:'flip'}],xlabel:'pulse #'});
+  const q0=rows[0],q1=rows[rows.length-1];
+  $('aM').innerHTML=`phenotype：${r.flip>0?'pulse '+r.flip+' 時 flip':'20 pulses 內未 flip'}　alert：${al>0?'pulse '+al:'—'}<br>acc<sub>A</sub>：${q0.acc.toFixed(2)} → ${q1.acc.toFixed(2)}　plasticity cost：${q0.plast} → ${q1.plast} steps　‖θ‖：${q0.wnorm.toFixed(1)} → ${q1.wnorm.toFixed(1)}　‖Δθ‖：${q0.drift.toFixed(1)} → ${q1.drift.toFixed(1)}`;});
+$('aStat').onclick=()=>later(()=>{$('aS').textContent=stats(s=>aiProtocol(aiOpt(val('al'),s)),s=>aiProtocol(aiOpt(0.05,s+100,1)),'wnorm',12,[4,4,2,0.10]);});
+</script></body></html>
