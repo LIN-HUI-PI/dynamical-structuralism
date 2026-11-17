@@ -1,0 +1,105 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EEG Transition Scanner (prototype)</title>
+<style>
+:root{--bg:#fafaf8;--fg:#1d2328;--mute:#6b747c;--card:#fff;--line:#d5d9dc;--acc:#2a6fdb}
+@media(prefers-color-scheme:dark){:root{--bg:#14171a;--fg:#e6e9eb;--mute:#8d979e;--card:#1c2024;--line:#3a4147;--acc:#6aa2f5}}
+*{box-sizing:border-box}body{margin:0 auto;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Noto Sans TC",sans-serif;padding:14px 14px 40px;max-width:720px}
+h1{font-size:19px;margin:6px 0 4px}h2{font-size:16px;margin:0 0 8px}h3{font-size:13px;margin:14px 0 2px;color:var(--mute);font-weight:600}
+p.s{color:var(--mute);font-size:13px;margin:0 0 10px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+.k i{display:inline-block;width:10px;height:3px;margin:0 3px 2px 8px;vertical-align:middle}
+canvas{width:100%;height:160px;display:block;margin:4px 0}
+label{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:8px}label b{color:var(--fg);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--acc)}
+button{font:inherit;font-size:14px;padding:9px 14px;border-radius:8px;border:1px solid var(--acc);background:var(--acc);color:#fff;margin:8px 8px 0 0}button.o{background:transparent;color:var(--acc)}
+.m{font-size:13px;min-height:20px}.busy button{opacity:.5;pointer-events:none}code{font-size:12px;background:var(--line);padding:1px 5px;border-radius:4px}
+.def{font-size:13px;color:var(--mute)}.def li{margin:2px 0}
+</style></head><body>
+<h1>EEG Transition Scanner</h1>
+<p class="s">單通道 EEG 的 pre-transition 掃描器（研究原型）。不是診斷工具，不能用於醫療判斷。</p>
+<div class="card"><h2>Method</h2><ul class="def">
+<li>Signal → 每 1 s 一個 window 的 log-variance，得到 feature series v<sub>k</sub>。</li>
+<li>在 v<sub>k</sub> 上以 rolling window（R 點）算 <b>lag-1 autocorrelation</b> 與 <b>variance</b>（critical slowing down indicators）。</li>
+<li>Baseline：開頭 B 分鐘；<b>alert</b> = 指標連續 3 點超過 baseline mean + k·SD。</li>
+<li>若提供 onset 時間，報告 lead time；若無 onset（或 control），報告 false alarm。</li></ul></div>
+<div class="card"><h2>Input</h2>
+<button id="demoT">Demo：synthetic pre-ictal</button><button class="o" id="demoC">Demo：synthetic control</button>
+<p class="s" style="margin-top:10px">或上傳 CSV（數值欄，每列一個 sample）：</p>
+<input type="file" id="file" accept=".csv,.txt">
+<label>sampling rate (Hz)<b id="fsv"></b></label><input id="fs" type="range" min="1" max="512" step="1" value="64">
+<label>column index（0 起算）<b id="colv"></b></label><input id="col" type="range" min="0" max="20" step="1" value="0">
+<label>onset 時間（min；0 = 未知）<b id="onv"></b></label><input id="on" type="range" min="0" max="240" step="1" value="0">
+<label>baseline B（min）<b id="bv"></b></label><input id="bl" type="range" min="2" max="30" step="1" value="8">
+<label>rolling window R（points）<b id="rv"></b></label><input id="rw" type="range" min="10" max="120" step="5" value="60">
+<label>threshold k（SD）<b id="kv"></b></label><input id="kk" type="range" min="2" max="6" step="0.5" value="4">
+<button id="run">Scan</button><button class="o" id="batch">Demo ×10（pre-ictal + control）</button><div class="m" id="bm"></div></div>
+<div class="card"><h2>Result</h2>
+<h3>log-variance（feature）</h3><canvas id="c1"></canvas>
+<h3>lag-1 autocorrelation（rolling）</h3><canvas id="c2"></canvas>
+<h3>variance（rolling）</h3><canvas id="c3"></canvas>
+<div class="m" id="m"></div></div>
+<p class="s">限制：Demo 訊號是依 CSD 假設人工生成，只用來測試 pipeline，不能當作預警有效的證據。真實有效性需用有標註發作時間的 EEG（如 CHB-MIT）、跨受試者與誤報率評估。CSV 在瀏覽器本機處理，不上傳。</p>
+<script>
+const $=id=>document.getElementById(id);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function plot(cv,series,o){
+  const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;cv.width=w*dpr;cv.height=h*dpr;
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  const L=40,R=8,T=10,B=24;let xs=[],ys=[];series.forEach(s=>{xs=xs.concat(s.x);ys=ys.concat(s.y)});
+  let x0=o.xmin??Math.min(...xs),x1=o.xmax??Math.max(...xs),y0=o.ymin??Math.min(...ys),y1=o.ymax??Math.max(...ys);
+  if(x0===x1){x1=x0+1}if(y0===y1){y0-=1;y1+=1}
+  const X=v=>L+(v-x0)/(x1-x0)*(w-L-R),Y=v=>h-B-(v-y0)/(y1-y0)*(h-T-B);
+  c.strokeStyle=css('--line');c.fillStyle=css('--mute');c.font='11px system-ui';c.lineWidth=1;
+  c.beginPath();c.moveTo(L,T);c.lineTo(L,h-B);c.lineTo(w-R,h-B);c.stroke();
+  [0,.5,1].forEach(t=>{const xv=x0+t*(x1-x0),yv=y0+t*(y1-y0);c.textAlign='center';c.fillText((+xv.toFixed(1)),X(xv),h-B+14);c.textAlign='right';c.fillText(+yv.toFixed(2),L-4,Y(yv)+4);});
+  (o.vlines||[]).forEach(v=>{if(v.x<0)return;c.strokeStyle=v.color;c.setLineDash([5,4]);c.lineWidth=1.5;c.beginPath();c.moveTo(X(v.x),T);c.lineTo(X(v.x),h-B);c.stroke();c.setLineDash([]);c.fillStyle=v.color;c.textAlign='center';c.fillText(v.label,Math.min(Math.max(X(v.x),L+14),w-R-14),T+9);});
+  series.forEach(s=>{c.strokeStyle=s.color;c.lineWidth=2;c.beginPath();s.x.forEach((xv,i)=>{i?c.lineTo(X(xv),Y(s.y[i])):c.moveTo(X(xv),Y(s.y[i]))});c.stroke();
+    if(s.dots)s.x.forEach((xv,i)=>{c.fillStyle=s.dc?s.dc[i]:s.color;c.beginPath();c.arc(X(xv),Y(s.y[i]),3.2,0,7);c.fill()});});
+  if(o.xlabel){c.fillStyle=css('--mute');c.textAlign='right';c.fillText(o.xlabel,w-R,h-B-4);}
+}
+
+function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;}}
+function gauss(r){return Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r());}
+const val=id=>parseFloat($(id).value);
+function bind(id,o){const e=$(id),v=$(o);const u=()=>v.textContent=e.value;e.addEventListener('input',u);u();}
+[['fs','fsv'],['col','colv'],['on','onv'],['bl','bv'],['rw','rv'],['kk','kv']].forEach(a=>bind(...a));
+const mean=a=>a.reduce((p,q)=>p+q,0)/a.length;
+const sd=a=>{const m=mean(a);return Math.sqrt(mean(a.map(u=>(u-m)**2)));};
+let SIG=null;
+function synth(pre,seed){const fs=64,T=40*60,onset=30*60,r=rng(seed),N=fs*T,x=new Float64Array(N);let u=0,lp=0;
+  for(let i=0;i<N;i++){const t=i/fs;
+    if(i%fs===0){const ph=pre?Math.min(1,Math.max(0,(t-(onset-12*60))/(12*60))):0;const phi=0.5+0.45*ph;u=phi*u+0.35*gauss(r);}
+    lp=0.6*lp+gauss(r);let v=Math.exp(0.6*u)*lp;
+    if(pre&&t>=onset&&t<onset+90)v=v*2.5+6*Math.sin(2*Math.PI*8*t);
+    x[i]=v;}
+  return {x,fs,onsetMin:pre?30:0};}
+function features(x,fs){const n=Math.floor(x.length/fs),v=[];for(let k=0;k<n;k++){let s=0,m=0;for(let i=0;i<fs;i++)m+=x[k*fs+i];m/=fs;for(let i=0;i<fs;i++){const d=x[k*fs+i]-m;s+=d*d;}v.push(Math.log(s/fs+1e-12));}return v;}
+function rolling(v,R){const ac=[],va=[];for(let i=R;i<=v.length;i++){const w=v.slice(i-R,i),m=mean(w);let c=0,s=0;for(let j=0;j<R;j++){const d=w[j]-m;s+=d*d;if(j)c+=d*(w[j-1]-m);}va.push(s/R);ac.push(s>1e-12?c/s:0);}return {ac,va};}
+function alertAt(ser,tOff,Bpts,k,consec){const b=ser.slice(0,Bpts);if(b.length<5)return -1;const m=mean(b),th=m+k*Math.max(sd(b),0.05*Math.abs(m)+1e-9);let c=0;for(let i=Bpts;i<ser.length;i++){c=ser[i]>th?c+1:0;if(c>=consec)return tOff+i;}return -1;}
+function scan(){if(!SIG){$('m').textContent='請先選 demo 或上傳 CSV。';return;}
+  const fs=SIG.fs,v=features(SIG.x,fs),R=val('rw'),{ac,va}=rolling(v,R);
+  const tOff=R-1,B=Math.max(5,Math.round(val('bl')*60)-R+1),k=val('kk'),onS=SIG.onsetMin>0?SIG.onsetMin*60:0;
+  const aA=alertAt(ac,tOff,B,k,3),aV=alertAt(va,tOff,B,k,3);
+  const tm=i=>i/60;const vl=[];const mk=(a,c,l)=>{if(a>0)vl.push({x:tm(a),color:c,label:l});};
+  mk(aA,'#2f9e6e','alert');if(onS>0)vl.push({x:onS/60,color:'#d6453d',label:'onset'});
+  const X1=v.map((_,i)=>tm(i)),X2=ac.map((_,i)=>tm(i+tOff)),xmax=v.length/60;
+  plot($('c1'),[{x:X1,y:v,color:'#2a6fdb'}],{xmin:0,xmax,vlines:vl,xlabel:'min'});
+  plot($('c2'),[{x:X2,y:ac,color:'#e0782b'}],{xmin:0,xmax,vlines:vl,xlabel:'min'});
+  const vlv=[];if(aV>0)vlv.push({x:tm(aV),color:'#2f9e6e',label:'alert'});if(onS>0)vlv.push({x:onS/60,color:'#d6453d',label:'onset'});
+  plot($('c3'),[{x:X2,y:va,color:'#7a5cc7'}],{xmin:0,xmax,vlines:vlv,xlabel:'min'});
+  const f=a=>a>0?(a/60).toFixed(1)+' min':'—';let msg=`長度 ${(v.length/60).toFixed(1)} min；AC1 alert：${f(aA)}　variance alert：${f(aV)}`;
+  if(onS>0){const lead=a=>a>0&&a<onS?((onS-a)/60).toFixed(1)+' min':(a>0?'onset 後':'未預警');msg+=`<br>onset ${(onS/60).toFixed(1)} min → lead：AC1 ${lead(aA)}；variance ${lead(aV)}`;}
+  else msg+=`<br>未提供 onset：任何 alert 皆視為 false alarm（單一記錄，無統計意義）`;
+  $('m').innerHTML=msg;}
+$('demoT').onclick=()=>{SIG=synth(true,3);$('fs').value=64;$('on').value=30;$('fsv').textContent=64;$('onv').textContent=30;scan();};
+$('demoC').onclick=()=>{SIG=synth(false,4);$('fs').value=64;$('on').value=0;$('fsv').textContent=64;$('onv').textContent=0;scan();};
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const L=String(rd.result).split(/\r?\n/),c=val('col'),a=[];for(const l of L){const p=l.split(/[,;\t ]+/),q=parseFloat(p[c]);if(!isNaN(q))a.push(q);}
+  if(a.length<val('fs')*120){$('m').textContent='有效數值太少（至少需 2 分鐘資料），請檢查欄位與取樣率。';SIG=null;return;}
+  SIG={x:Float64Array.from(a),fs:val('fs'),onsetMin:val('on')};scan();};rd.readAsText(f);};
+$('run').onclick=()=>{if(SIG){SIG.fs=SIG.x.length>64*60*40-1&&false?SIG.fs:SIG.fs;SIG.onsetMin=val('on');}scan();};
+
+$('batch').onclick=()=>{document.body.classList.add('busy');setTimeout(()=>{try{const R=val('rw'),k=val('kk'),B=Math.max(5,Math.round(val('bl')*60)-R+1);let lead=[],pre=0,fa=0;
+  for(let s=1;s<=10;s++){const t=synth(true,s),c=synth(false,s+50);
+    {const v=features(t.x,t.fs),{ac}=rolling(v,R),a=alertAt(ac,R-1,B,k,3);if(a>0&&a<1800){pre++;lead.push((1800-a)/60);}}
+    {const v=features(c.x,c.fs),{ac}=rolling(v,R),a=alertAt(ac,R-1,B,k,3);if(a>0)fa++;}}
+  lead.sort((a,b)=>a-b);$('bm').textContent=`AC1 alert：onset 前預警 ${pre}/10，median lead ${lead.length?lead[Math.floor(lead.length/2)].toFixed(1):'—'} min；control false alarm ${fa}/10（synthetic，僅示範 R、k 的取捨）`;}finally{document.body.classList.remove('busy')}},30);};
+</script></body></html>
